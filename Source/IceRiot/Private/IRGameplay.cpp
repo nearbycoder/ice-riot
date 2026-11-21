@@ -349,7 +349,7 @@ void AIRGameMode::UpdatePuckInteractions(float Dt)
 	}
 
 	// a loose puck nobody can reach for a long time (pinned in a corner): whistle
-	if (LooseTime > 9.f && Sp < 30.f)
+	if (LooseTime > 9.f && Sp < 30.f && Mode != EIRMode::Practice)
 	{
 		HandleWhistle(NearestDot(P2), TEXT(""));
 	}
