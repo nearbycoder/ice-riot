@@ -2,7 +2,7 @@ Binaries/
 Intermediate/
 Saved/
 DerivedDataCache/
-Build/
+Build/*
 Release/
 .DS_Store
 __pycache__/
@@ -13,3 +13,7 @@ node_modules/
 web/play/build/
 Art/Previews/
 Art/Blend/
+
+!Build/Mac/
+Build/Mac/*
+!Build/Mac/Resources/

@@ -620,6 +620,21 @@ void AIRGameMode::FinishGame()
 	{
 		const bool bHumanWon = Winner == 0;
 		if (bHumanWon) { TournamentStage++; }
+		if (bHumanWon && TournamentStage >= TournamentOrder.Num())
+		{
+			// beat the whole league
+			Callout(TEXT("CHAMPIONS!"), FString::Printf(TEXT("THE %s RULE THE ICE"), *TeamInfo[0].Name.ToUpper()), FLinearColor(1.f, 0.8f, 0.15f), 8.f, 2, 1.2f);
+			if (FX)
+			{
+				FX->Hats(60);
+				FX->Confetti(FVector::ZeroVector, TeamInfo[0].Primary, FLinearColor(1.f, 0.8f, 0.15f), 400);
+			}
+			if (Audio) { Audio->CrowdReaction(TEXT("Organ_Charge"), 1.f); }
+		}
+		else if (bHumanWon)
+		{
+			Callout(FString::Printf(TEXT("ROUND %d CLEARED"), TournamentStage), FString::Printf(TEXT("%d TO GO"), TournamentOrder.Num() - TournamentStage), FLinearColor(0.4f, 0.9f, 1.f), 4.f, 2);
+		}
 	}
 	GoToScreen(EIRScreen::Results);
 	if (bSimExit)
