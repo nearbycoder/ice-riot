@@ -1,0 +1,13 @@
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+Build/
+Release/
+.DS_Store
+__pycache__/
+*.pyc
+Art/Export/
+Art/Blend/*.blend1
+node_modules/
+web/play/build/
