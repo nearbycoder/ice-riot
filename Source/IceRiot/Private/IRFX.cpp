@@ -214,7 +214,7 @@ void UIRFX::Sparks(const FVector& P, const FLinearColor& C, int32 Count, float S
 		X.Drag = 1.5f;
 		X.Gravity = 980.f;
 		X.Rot = 0.f; X.RotV = 0.f;
-		X.Kind = KAdd;
+		X.Kind = KAlpha;
 		X.bFlat = false; X.bStretch = true; X.bGround = true;
 		Add(X);
 	}
@@ -259,7 +259,7 @@ void UIRFX::FireBurst(const FVector& P, float Scale)
 		X.C.A = 1.f;
 		X.Drag = 1.f; X.Gravity = -150.f;
 		X.Rot = FMath::FRandRange(0.f, 360.f); X.RotV = FMath::FRandRange(-120.f, 120.f);
-		X.Kind = KAdd; X.bFlat = false; X.bStretch = false; X.bGround = false;
+		X.Kind = KAlpha; X.bFlat = false; X.bStretch = false; X.bGround = false;
 		Add(X);
 	}
 	Smoke(P + FVector(0, 0, 120.f * Scale), Scale * 0.6f);
@@ -278,7 +278,7 @@ void UIRFX::FireTrail(const FVector& P, const FVector& Vel)
 		X.C = FLinearColor(1.f, FMath::FRandRange(0.3f, 0.7f), 0.05f, 1.f) * 2.2f;
 		X.C.A = 1.f;
 		X.Drag = 3.f; X.Gravity = -200.f; X.Rot = FMath::FRandRange(0.f, 360.f); X.RotV = 200.f;
-		X.Kind = KAdd; X.bFlat = false; X.bStretch = false; X.bGround = false;
+		X.Kind = KAlpha; X.bFlat = false; X.bStretch = false; X.bGround = false;
 		Add(X);
 	}
 }
@@ -293,7 +293,7 @@ void UIRFX::Streak(const FVector& P, const FLinearColor& C, float Size)
 	X.Size1 = Size * 0.2f;
 	X.C = C;
 	X.Drag = 0.f; X.Gravity = 0.f; X.Rot = 0.f; X.RotV = 0.f;
-	X.Kind = KAdd; X.bFlat = false; X.bStretch = false; X.bGround = false;
+	X.Kind = KAlpha; X.bFlat = false; X.bStretch = false; X.bGround = false;
 	Add(X);
 }
 
@@ -328,7 +328,7 @@ void UIRFX::PowerCharge(AIRPlayer* P)
 		X.C = FLinearColor(1.f, 0.55f, 0.1f, 1.f) * 2.f;
 		X.C.A = 1.f;
 		X.Drag = 0.f; X.Gravity = 0.f; X.Rot = 0.f; X.RotV = 0.f;
-		X.Kind = KAdd; X.bFlat = false; X.bStretch = true; X.bGround = false;
+		X.Kind = KAlpha; X.bFlat = false; X.bStretch = true; X.bGround = false;
 		Add(X);
 	}
 	Glow(B, FLinearColor(1.f, 0.5f, 0.1f, 1.f), 90.f, 0.3f);
@@ -399,7 +399,7 @@ void UIRFX::Stars(const FVector& P)
 		X.C = FLinearColor(1.f, 0.9f, 0.2f, 1.f) * 1.6f;
 		X.C.A = 1.f;
 		X.Drag = 0.f; X.Gravity = 0.f; X.Rot = 0.f; X.RotV = 180.f;
-		X.Kind = KAdd; X.bFlat = false; X.bStretch = false; X.bGround = false;
+		X.Kind = KAlpha; X.bFlat = false; X.bStretch = false; X.bGround = false;
 		Add(X);
 	}
 }

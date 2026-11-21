@@ -322,7 +322,8 @@ void AIRPuck::UpdateVisuals(float Dt)
 	SetActorRotation(R);
 	if (MarkerMID)
 	{
-		MarkerMID->SetScalarParameterValue(TEXT("Alpha"), Carrier ? 0.35f : 0.8f);
+		MarkerMID->SetScalarParameterValue(TEXT("Alpha"), Carrier ? 0.f : FMath::Clamp(1.f - (Pos.Z - 5.f) / 150.f, 0.25f, 0.95f));
+		MarkerMID->SetVectorParameterValue(TEXT("Color"), bOnFire ? FLinearColor(1.f, 0.35f, 0.f) : FLinearColor(0.f, 0.75f, 1.f));
 	}
 	if (Marker)
 	{

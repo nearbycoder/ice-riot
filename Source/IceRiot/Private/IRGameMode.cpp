@@ -188,13 +188,16 @@ void AIRGameMode::StartPlay()
 		M->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.01f, 0.01f, 0.01f));
 		Puck->Mesh->SetMaterial(0, M);
 	}
-	if (UMaterialInterface* GM = AS->FXMaterial(TEXT("M_FX_Glow")))
+	if (UMaterialInterface* GM = AS->FXMaterial(TEXT("M_FX_Ring")))
 	{
+		// a crisp locator ring under the puck that reads on white ice
 		Puck->Marker->SetStaticMesh(AS->EngineShape(TEXT("Plane")));
 		Puck->MarkerMID = UMaterialInstanceDynamic::Create(GM, Puck);
-		Puck->MarkerMID->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.4f, 0.8f, 1.f));
+		Puck->MarkerMID->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.f, 0.75f, 1.f));
+		Puck->MarkerMID->SetScalarParameterValue(TEXT("Turbo"), 0.f);
 		Puck->Marker->SetMaterial(0, Puck->MarkerMID);
-		Puck->Marker->SetWorldScale3D(FVector(0.32f, 0.32f, 1.f));
+		Puck->Marker->SetWorldScale3D(FVector(0.42f, 0.42f, 1.f));
+		Puck->Marker->SetTranslucentSortPriority(6);
 	}
 	else
 	{
