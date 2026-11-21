@@ -37,6 +37,16 @@ void UIRFX::Init(AActor* Owner)
 	HatISM = Make(TEXT("M_FX_Opaque"), Hat ? Hat : AS->EngineShape(TEXT("Cone")));
 	if (Hat) { HatISM->EmptyOverrideMaterials(); }
 	HatISM->CastShadow = true;
+	static const TCHAR* PropNames[3] = { TEXT("SM_Helmet"), TEXT("SM_Stick"), TEXT("SM_Glove") };
+	for (int32 i = 0; i < 3; ++i)
+	{
+		if (UStaticMesh* M = AS->Mesh(PropNames[i]))
+		{
+			PropISM[i] = Make(TEXT("M_FX_Opaque"), M);
+			PropISM[i]->EmptyOverrideMaterials();
+			PropISM[i]->CastShadow = true;
+		}
+	}
 	bEnabled = AS->FXMaterial(TEXT("M_FX_Additive")) != nullptr;
 }
 
@@ -75,10 +85,11 @@ void UIRFX::Tick(float Dt, const FVector& CamLoc)
 		P.V *= FMath::Max(0.f, 1.f - P.Drag * Dt);
 		P.P += P.V * Dt;
 		P.Rot += P.RotV * Dt;
-		if (P.bGround && P.P.Z < 1.f)
+		const float Floor = P.Kind >= KHelmet ? 6.f : 1.f;
+		if (P.bGround && P.P.Z < Floor)
 		{
-			P.P.Z = 1.f;
-			P.V.Z = -P.V.Z * 0.2f;
+			P.P.Z = Floor;
+			P.V.Z = P.Kind >= KHelmet ? FMath::Abs(P.V.Z) * 0.35f : -P.V.Z * 0.2f;
 			P.V.X *= 0.6f; P.V.Y *= 0.6f;
 			P.RotV *= 0.5f;
 		}
@@ -102,7 +113,7 @@ void UIRFX::Tick(float Dt, const FVector& CamLoc)
 			const float Size = FMath::Lerp(P.Size0, P.Size1, T);
 			FTransform X;
 			X.SetLocation(P.P);
-			if (Kind == KHat)
+			if (Kind >= KHat)
 			{
 				X.SetRotation(FRotator(P.Rot * 0.5f, P.Rot, P.Rot * 0.3f).Quaternion());
 				X.SetScale3D(FVector(Size));
@@ -170,6 +181,9 @@ void UIRFX::Tick(float Dt, const FVector& CamLoc)
 	Fill(AddISM, KAdd);
 	Fill(AlphaISM, KAlpha);
 	Fill(HatISM, KHat);
+	Fill(PropISM[0], KHelmet);
+	Fill(PropISM[1], KStick);
+	Fill(PropISM[2], KGlove);
 }
 
 static FVector RandCone(const FVector& Dir, float HalfAngleDeg)
@@ -415,4 +429,22 @@ void UIRFX::Stars(const FVector& P)
 		X.Kind = KAlpha; X.bFlat = false; X.bStretch = false; X.bGround = false;
 		Add(X);
 	}
+}
+
+void UIRFX::Prop(int32 Which, const FVector& P, const FVector& V)
+{
+	if (Which < 0 || Which > 2 || !PropISM[Which])
+	{
+		return;
+	}
+	FPart X;
+	X.P = P;
+	X.V = V;
+	X.Life = X.MaxLife = 6.f;
+	X.Size0 = X.Size1 = 1.f;
+	X.C = FLinearColor::White;
+	X.Drag = 0.6f; X.Gravity = 980.f;
+	X.Rot = FMath::FRandRange(0.f, 360.f); X.RotV = FMath::FRandRange(400.f, 900.f) * (FMath::RandBool() ? 1.f : -1.f);
+	X.Kind = EKind(KHelmet + Which); X.bFlat = false; X.bStretch = false; X.bGround = true;
+	Parts.Add(X);
 }

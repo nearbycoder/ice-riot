@@ -1298,7 +1298,7 @@ void AIRPlayer::UpdateVisuals(float Dt)
 			if (!M) { continue; }
 			M->SetScalarParameterValue(TEXT("RimStrength"), Rim);
 			M->SetVectorParameterValue(TEXT("RimColor"), RimC);
-			M->SetScalarParameterValue(TEXT("FlashStrength"), HitFlash * 3.f);
+			M->SetScalarParameterValue(TEXT("FlashStrength"), HitFlash * 1.2f);
 			M->SetVectorParameterValue(TEXT("FlashColor"), FLinearColor(1.f, 1.f, 1.f));
 		}
 		if (bBlazing && Game && Game->FX && FMath::FRand() < Dt * 20.f && Z < 10.f)

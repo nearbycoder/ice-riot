@@ -888,7 +888,14 @@ void AIRGameMode::OnCheck(AIRPlayer* Att, bool bPower)
 		Sfx(TEXT("Sfx/Check_Power"), Where, 1.f);
 		Shake(1.0f);
 		HitStop = 0.11f;
-		if (FX) { FX->Impact(Where, 1.4f, FLinearColor(1.f, 0.9f, 0.6f, 1.f) * 1.5f); FX->Stars(Victim->HeadPos()); }
+		if (FX)
+		{
+			FX->Impact(Where, 1.4f, FLinearColor(1.f, 0.9f, 0.6f, 1.f) * 1.5f);
+			FX->Stars(Victim->HeadPos());
+			// gear goes flying
+			FX->Prop(0, Victim->HeadPos() + FVector(0, 0, 15.f), FVector(Dir * 500.f, 650.f) + FMath::VRand() * 120.f);
+			FX->Prop(1, Victim->GetPos3() + FVector(0, 0, 90.f), FVector(Dir.GetRotated(FMath::FRandRange(-50.f, 50.f)) * 700.f, 420.f));
+		}
 		Announce(TEXT("VO_PowerHit"), 2.f);
 		Crowd(0.6f, TEXT("Crowd_Cheer_Small"));
 		Callout(TEXT("CRUSHED!"), Victim->Info.Last.ToUpper(), FLinearColor(1.f, 0.25f, 0.15f), 1.5f, 0, 0.8f);
@@ -1046,6 +1053,15 @@ void AIRGameMode::StartFight(AIRPlayer* A, AIRPlayer* B)
 	TStats[B->Team].Fights++;
 	Sfx(TEXT("Sfx/Whistle_Long"), FVector(C, 0.f), 0.8f);
 	Sfx(TEXT("Sfx/Gloves_Drop"), FVector(C, 0.f), 1.f);
+	if (FX)
+	{
+		for (AIRPlayer* F : { A, B })
+		{
+			FX->Prop(2, F->GetPos3() + FVector(F->Right() * 25.f, 110.f), FVector(F->Right() * 120.f, 150.f));
+			FX->Prop(2, F->GetPos3() + FVector(F->Right() * -25.f, 110.f), FVector(F->Right() * -120.f, 150.f));
+			FX->Prop(1, F->GetPos3() + FVector(F->Forward() * 30.f, 80.f), FVector(F->Forward() * -80.f + F->Right() * 60.f, 60.f));
+		}
+	}
 	Announce(TEXT("VO_Fight"), 3.f);
 	Crowd(1.f, TEXT("Crowd_Cheer_Big"));
 	if (Audio) { Audio->SetExcitement(1.f); }
@@ -1133,7 +1149,9 @@ void AIRGameMode::TickFight(float Dt)
 			const FVector2D C = (A->Pos + B->Pos) * 0.5f;
 			const FVector2D To = P->Pos - C;
 			const float D = To.Size();
-			const FVector2D Want = C + (D > 1.f ? To / D : FVector2D(1, 0)) * 420.f;
+			FVector2D Dir = D > 1.f ? To / D : FVector2D(1, 0);
+			if (Dir.Y > -0.25f) { Dir.Y = -0.25f - FMath::Abs(Dir.Y) * 0.5f; Dir.Normalize(); }   // stay off the camera side
+			const FVector2D Want = C + Dir * 430.f;
 			In.MoveWorld = (Want - P->Pos) / 300.f;
 			if (In.MoveWorld.SizeSquared() > 1.f) { In.MoveWorld.Normalize(); }
 			In.bFaceTarget = true;

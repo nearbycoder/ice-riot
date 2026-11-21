@@ -33,12 +33,14 @@ public:
 	void Smoke(const FVector& P, float Scale);
 	void Stars(const FVector& P);
 	void Glow(const FVector& P, const FLinearColor& C, float Size, float Life);
+	/** Loose gear that tumbles and bounces on the ice: 0 helmet, 1 stick, 2 glove. */
+	void Prop(int32 Which, const FVector& P, const FVector& V);
 
 	bool bEnabled = true;
 	float Quality = 1.f;
 
 private:
-	enum EKind : uint8 { KAdd, KAlpha, KHat };
+	enum EKind : uint8 { KAdd, KAlpha, KHat, KHelmet, KStick, KGlove };
 	struct FPart
 	{
 		FVector P, V;
@@ -57,5 +59,6 @@ private:
 	UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> AddISM;
 	UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> AlphaISM;
 	UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> HatISM;
+	UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> PropISM[3];
 	void Add(const FPart& P);
 };
