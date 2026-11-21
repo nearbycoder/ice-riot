@@ -405,7 +405,7 @@ void AIRPlayer::Simulate(float Dt, const FIRIntent& In)
 	ShootComboTimer = FMath::Max(0.f, ShootComboTimer - Dt);
 	Rage = FMath::Max(0.f, Rage - Dt);
 	GoalieGlow = FMath::Max(0.f, GoalieGlow - Dt * 0.02f);
-	Anger = FMath::Max(0.f, Anger - Dt * 0.025f);
+	Anger = FMath::Max(0.f, Anger - Dt * 0.02f);
 	ActionTime += Dt;
 	PossessTime = HasPuck() ? PossessTime + Dt : 0.f;
 
@@ -1097,7 +1097,7 @@ void AIRPlayer::TakeHit(AIRPlayer* From, float Power, bool bPowerCheck, FVector2
 	HitFlash = 1.f;
 	LastHitTime = Game ? Game->GameTime : 0.f;
 	const float FrenzyMul = (Game && Game->Opt.bFightFrenzy) ? 3.f : 1.f;
-	Anger = FMath::Min(1.2f, Anger + (bPowerCheck ? 0.48f : 0.23f) * FrenzyMul * FMath::Lerp(0.75f, 1.25f, Info.R.Fight / 10.f));
+	Anger = FMath::Min(1.2f, Anger + (bPowerCheck ? 0.5f : 0.29f) * FrenzyMul * FMath::Lerp(0.75f, 1.25f, Info.R.Fight / 10.f));
 	if (AnimInst) { AnimInst->StopUpper(0.05f); }
 	PendingShot = EIRShotKind::None;
 	if (bPowerCheck || (IsGoalie() && Power > 1.2f))
