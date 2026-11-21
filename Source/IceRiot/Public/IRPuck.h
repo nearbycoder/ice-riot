@@ -58,6 +58,7 @@ public:
 	TWeakObjectPtr<AIRPlayer> SaveGoalie;
 	bool bSaveCatch = false;
 	bool bShotOnTarget = false;
+	bool bBeatGoalie = false;      // pre-roll said goal: the goalie must not body-catch it
 	int32 ShotSign = 0;
 
 	UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> Mesh;

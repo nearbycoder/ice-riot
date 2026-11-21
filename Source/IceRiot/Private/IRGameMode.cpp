@@ -619,8 +619,10 @@ void AIRGameMode::FinishGame()
 	GoToScreen(EIRScreen::Results);
 	if (bSimExit)
 	{
-		UE_LOG(LogIceRiot, Display, TEXT("IR_SIM_RESULT %s %d - %d %s | shots %d-%d hits %d-%d fights %d"), *TeamInfo[0].Abbrev, Score[0], Score[1], *TeamInfo[1].Abbrev,
-			TStats[0].Shots, TStats[1].Shots, TStats[0].Hits, TStats[1].Hits, TStats[0].Fights + TStats[1].Fights);
+		extern int32 GIRDbg[6];
+		UE_LOG(LogIceRiot, Display, TEXT("IR_SIM_RESULT DBG preroll=%d ontarget=%d saverolls=%d goals=%d early=%d"), GIRDbg[1], GIRDbg[2], GIRDbg[3], GIRDbg[4], GIRDbg[5]);
+		UE_LOG(LogIceRiot, Display, TEXT("IR_SIM_RESULT %s %d - %d %s | shots %d-%d saves %d-%d hits %d-%d fights %d"), *TeamInfo[0].Abbrev, Score[0], Score[1], *TeamInfo[1].Abbrev,
+			TStats[0].Shots, TStats[1].Shots, TStats[0].Saves, TStats[1].Saves, TStats[0].Hits, TStats[1].Hits, TStats[0].Fights + TStats[1].Fights);
 		FPlatformMisc::RequestExit(false);
 	}
 }

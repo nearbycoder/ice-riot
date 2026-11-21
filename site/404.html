@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offside! — ICE RIOT</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#050816">
+  <script>
+    // GitHub Pages serves this file for any missing path at any depth, so pin relative URLs
+    // to the site root (/ice-riot/ on Pages, / when previewing locally).
+    (function () {
+      var m = location.pathname.match(/^\/ice-riot(\/|$)/);
+      document.write('<base href="' + (m ? "/ice-riot/" : "/") + '">');
+    })();
+  </script>
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .lost {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 40px 16px;
+      text-align: center;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .lost::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: url("media/renders/rink_net-800.webp") center / cover no-repeat;
+      filter: brightness(0.32) saturate(1.1) blur(2px);
+      transform: scale(1.05);
+    }
+    .lost::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(ellipse at 50% 45%, rgba(227, 25, 59, 0.25), transparent 60%), linear-gradient(180deg, transparent 50%, var(--night));
+    }
+    .lost .logo { width: min(320px, 70vw); margin: 0 auto 28px; }
+    .whistle {
+      display: inline-block;
+      margin-bottom: 18px;
+      padding: 6px 16px;
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--red);
+      box-shadow: -10px 0 0 #f4f7ff, 10px 0 0 #f4f7ff, -20px 0 0 #111, 20px 0 0 #111;
+      clip-path: polygon(-20px 0, calc(100% + 20px) 0, calc(100% + 20px) 100%, -20px 100%);
+    }
+    .code {
+      font-family: var(--display);
+      font-size: clamp(6rem, 26vw, 15rem);
+      line-height: 0.85;
+      color: transparent;
+      background: linear-gradient(180deg, #fff 0%, var(--ice-2) 40%, var(--ice-blue) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      transform: skewX(-8deg);
+      filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.4));
+    }
+    .lost h1 { font-family: var(--display); font-size: clamp(2rem, 6vw, 3.6rem); text-transform: uppercase; color: #fff; margin: 10px 0 10px; }
+    .lost p { color: var(--muted); max-width: 44ch; margin: 0 auto; }
+    .lost .hero-ctas { animation: none; }
+  </style>
+</head>
+<body>
+<main class="lost">
+  <div>
+    <a href="./"><img class="logo" src="media/logo-800.webp" width="800" height="400" alt="ICE RIOT home"></a>
+    <span class="whistle">Offside!</span>
+    <div class="code" aria-hidden="true">404</div>
+    <h1>This page went over the glass</h1>
+    <p>The puck's out of play and there's nothing here. Face-off is back at center ice.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-fire" href="./">Back to center ice</a>
+      <a class="btn btn-ghost" href="play/">Play in browser</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

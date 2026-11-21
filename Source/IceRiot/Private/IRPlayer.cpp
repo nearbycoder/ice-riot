@@ -587,8 +587,9 @@ void AIRPlayer::SimulateSkater(float Dt, const FIRIntent& In)
 		Pos += Vel * Dt;
 		if (ActionTime >= ActionDuration + 0.25f)
 		{
-			StartAction(EIRAction::GetUp, kGetUpLen);
-			PlayOneShot(A(TEXT("A_GetUp")), 1.f, 0.1f);
+			// the dive ends face-down and GetUp starts face-up: a longer blend rolls him over
+			StartAction(EIRAction::GetUp, kGetUpLen + 0.15f);
+			PlayOneShot(A(TEXT("A_GetUp")), 1.f, 0.35f);
 		}
 		break;
 	case EIRAction::Celebrate:
@@ -1095,7 +1096,7 @@ void AIRPlayer::TakeHit(AIRPlayer* From, float Power, bool bPowerCheck, FVector2
 	LastHitBy = From;
 	LastHitTime = Game ? Game->GameTime : 0.f;
 	const float FrenzyMul = (Game && Game->Opt.bFightFrenzy) ? 3.f : 1.f;
-	Anger = FMath::Min(1.2f, Anger + (bPowerCheck ? 0.40f : 0.17f) * FrenzyMul * FMath::Lerp(0.75f, 1.25f, Info.R.Fight / 10.f));
+	Anger = FMath::Min(1.2f, Anger + (bPowerCheck ? 0.48f : 0.23f) * FrenzyMul * FMath::Lerp(0.75f, 1.25f, Info.R.Fight / 10.f));
 	if (AnimInst) { AnimInst->StopUpper(0.05f); }
 	PendingShot = EIRShotKind::None;
 	if (bPowerCheck || (IsGoalie() && Power > 1.2f))

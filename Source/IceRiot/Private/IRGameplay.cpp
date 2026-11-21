@@ -12,6 +12,7 @@
 
 using namespace IRRink;
 
+int32 GIRDbg[6] = { 0, 0, 0, 0, 0, 0 };   // shots, prerolled, ontarget, savesrolled, goals, early-return
 namespace
 {
 	float Gauss() { return FMath::Clamp((FMath::FRand() + FMath::FRand() + FMath::FRand() - 1.5f) * 1.6f, -2.5f, 2.5f); }
@@ -83,6 +84,24 @@ void AIRGameMode::TickLive(float Dt)
 		}
 		else
 		{
+			// a pre-rolled save happens before this step if the puck would reach the goalie during it
+			if (AIRPlayer* G = Puck->SaveGoalie.Get())
+			{
+				const int32 Sign = Puck->ShotSign;
+				const float GoalieDepth = (GoalLineX * Sign - G->Pos.X) * Sign;
+				const float DepthNow = (GoalLineX * Sign - Puck->Pos.X) * Sign;
+				const float Closing = Puck->Vel.X * Sign;
+				if (Closing > 0.f && DepthNow - Closing * Dt <= GoalieDepth + 35.f)
+				{
+					// move the puck to the save point on its path, then save
+					const float T = FMath::Clamp((DepthNow - GoalieDepth - 30.f) / Closing, 0.f, Dt);
+					Puck->Pos += Puck->Vel * T;
+					Puck->SaveGoalie = nullptr;
+					OnSave(G, Puck->bSaveCatch, G->GoalieGlow >= 1.f);
+					RecordReplay();
+					return;
+				}
+			}
 			TArray<FIRPuckHit> Hits;
 			Puck->Simulate(Dt, Hits);
 			HandlePuckHits(Hits);
@@ -240,6 +259,10 @@ void AIRGameMode::UpdatePuckInteractions(float Dt)
 		{
 			continue;
 		}
+		if (P->IsGoalie() && Puck->bBeatGoalie && Puck->FlightTime < 1.5f)
+		{
+			continue;
+		}
 		const bool bGoalie = P->IsGoalie();
 		const float Reach = bGoalie ? 75.f : (P->Action == EIRAction::Dive ? 110.f : 70.f);
 		const float MaxZ = bGoalie ? 140.f : 45.f;
@@ -270,6 +293,7 @@ void AIRGameMode::UpdatePuckInteractions(float Dt)
 						V = (V - N * 2.f * FVector2D::DotProduct(V, N)) * 0.45f + N * 200.f;
 						Puck->Vel = FVector(V, FMath::FRandRange(0.f, 200.f));
 						Puck->SaveGoalie = nullptr;
+						Puck->bBeatGoalie = false;
 						Puck->LastTouch = P;
 						Puck->FlightTime = 0.f;
 						Sfx(TEXT("Sfx/Stick_Clack"), PP, 0.7f);
@@ -501,7 +525,7 @@ void AIRGameMode::OnShotReleased(AIRPlayer* Shooter, EIRShotKind Kind, float Pow
 		SideY = G->Pos.Y > 0.f ? -1.f : 1.f;
 		if (FMath::Abs(G->Pos.Y) < 10.f) { SideY = FMath::RandBool() ? 1.f : -1.f; }
 	}
-	float TY = SideY * FMath::FRandRange(45.f, 78.f);
+	float TY = SideY * FMath::FRandRange(40.f, 82.f);
 	float TZ = 0.f;
 	float Speed = 0.f;
 	float Sigma = 0.f;
@@ -534,7 +558,7 @@ void AIRGameMode::OnShotReleased(AIRPlayer* Shooter, EIRShotKind Kind, float Pow
 		break;
 	}
 	if (Shooter->bBlazing) { Speed *= 1.1f; Sigma *= 0.7f; }
-	Sigma *= FMath::Lerp(1.45f, 0.65f, (R.Accuracy - 1) / 9.f);
+	Sigma *= FMath::Lerp(2.2f, 1.1f, (R.Accuracy - 1) / 9.f);
 	Sigma *= FMath::Clamp(Dist / 1100.f, 0.6f, 1.8f);
 	Sigma *= 1.f + FMath::Clamp(Shooter->Speed() / 1200.f, 0.f, 1.f) * 0.25f;
 	if (Shooter->HumanIndex < 0 && Mode != EIRMode::Attract)
@@ -558,6 +582,7 @@ void AIRGameMode::OnShotReleased(AIRPlayer* Shooter, EIRShotKind Kind, float Pow
 	Shooter->NoPickupTime = 0.3f;
 	Shooter->Stats.Shots++;
 	TStats[Shooter->Team].Shots++;
+	PrevShotTime = LastShotTime;
 	LastShotTime = GameTime;
 
 	// feedback
@@ -601,12 +626,14 @@ void AIRGameMode::PreRollShot(AIRPlayer* Shooter, EIRShotKind Kind, float Power)
 	{
 		return;
 	}
+	GIRDbg[1]++;
 	const int32 Sign = Puck->ShotSign;
 	// where does the puck cross the goal line?
 	const FVector P0 = Puck->Pos;
 	const FVector V = Puck->Vel;
 	if (FMath::Abs(V.X) < 1.f || (GoalLineX * Sign - P0.X) * Sign < 0.f || V.X * Sign <= 0.f)
 	{
+		GIRDbg[5]++;
 		return;
 	}
 	const float T = (GoalLineX * Sign - P0.X) / V.X;
@@ -614,13 +641,14 @@ void AIRGameMode::PreRollShot(AIRPlayer* Shooter, EIRShotKind Kind, float Power)
 	const float Zc = P0.Z + V.Z * T - 0.5f * 980.f * T * T;
 	const bool bOnTarget = FMath::Abs(Y) < NetHalfWidth - PuckRadius && Zc < NetHeight - PuckRadius && Zc > -5.f;
 	Puck->bShotOnTarget = bOnTarget;
+	if (bOnTarget) { GIRDbg[2]++; }
 	if (!bOnTarget)
 	{
 		return;
 	}
 	const float Dist = FVector2D::Distance(FVector2D(P0.X, P0.Y), FVector2D(GoalLineX * Sign, 0.f));
 	const float Spd = V.Size();
-	float P = 0.60f + (G->Info.R.Goalie - 6) * 0.03f;
+	float P = 0.88f + (G->Info.R.Goalie - 6) * 0.03f;
 	P += FMath::Clamp((Dist - 800.f) / 3000.f, -0.15f, 0.25f);
 	P -= FMath::Clamp((Spd - 2600.f) / 2600.f, -0.1f, 0.25f) * 0.5f;
 	switch (Kind)
@@ -631,11 +659,11 @@ void AIRGameMode::PreRollShot(AIRPlayer* Shooter, EIRShotKind Kind, float Power)
 	default: break;
 	}
 	// rebounds and dekes catch goalies out of position
-	if (GameTime - LastShotTime < 0.01f && G->Action == EIRAction::GoalieSave) { P -= 0.18f; }
+	if (GameTime - PrevShotTime < 1.2f && G->Action == EIRAction::GoalieSave) { P -= 0.15f; }   // rebound
 	if (Shooter->Action == EIRAction::Spin || Shooter->ShootComboTimer > 0.f) { P -= 0.06f; }
-	const float OutOfPos = FMath::Abs(G->Pos.Y - Y) - 35.f;
-	P -= FMath::Clamp(OutOfPos / 160.f, 0.f, 0.35f);
-	if (FMath::Abs(Y) > 60.f || Zc > 85.f) { P -= 0.07f; }
+	const float OutOfPos = FMath::Abs(G->Pos.Y - Y) - 60.f;
+	P -= FMath::Clamp(OutOfPos / 150.f, 0.f, 0.3f);
+	if (FMath::Abs(Y) > 65.f && Zc > 75.f) { P -= 0.05f; }   // top corner
 	if (G->IsDown()) { P -= 0.4f; }
 	// difficulty: humans face better goalies on hard, CPU shooters are kinder on easy
 	if (Mode != EIRMode::Attract)
@@ -645,16 +673,18 @@ void AIRGameMode::PreRollShot(AIRPlayer* Shooter, EIRShotKind Kind, float Power)
 	}
 	P -= CatchupBoost[Shooter->Team] * 0.04f;
 	P += CatchupBoost[G->Team] * 0.04f;
-	P = FMath::Clamp(P, 0.12f, 0.92f);
+	P = FMath::Clamp(P, 0.12f, 0.94f);
 	if (G->GoalieGlow >= 1.f) { P = 0.98f; }
 	if (FMath::FRand() < P)
 	{
+		GIRDbg[3]++;
 		Puck->SaveGoalie = G;
 		Puck->bSaveCatch = Zc > 55.f && FMath::FRand() < 0.55f && Kind != EIRShotKind::Power;
 	}
 	else
 	{
 		// beaten: the goalie still flails at it
+		Puck->bBeatGoalie = true;
 		G->PlayGoalieSave(FVector(0.f, (Y - G->Pos.Y) * -Sign, Zc), false);
 	}
 }
@@ -1163,6 +1193,7 @@ void AIRGameMode::OnGoal(int32 Sign)
 	AIRPlayer* Assist = Puck ? Puck->PrevTouch.Get() : nullptr;
 	if (Assist == Scorer || (Assist && Assist->Team != ScoringTeam)) { Assist = nullptr; }
 	Score[ScoringTeam]++;
+	GIRDbg[4]++;
 	if (Penalties[1 - ScoringTeam].Num() > 0) { ReleasePenalty(1 - ScoringTeam); }
 	TStats[ScoringTeam].GoalsByPeriod[FMath::Clamp(Period - 1, 0, 3)]++;
 	LastGoalTeam = ScoringTeam;

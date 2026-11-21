@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ICE RIOT — Arcade Hockey Mayhem</title>
+  <meta name="description" content="ICE RIOT is a free, open-source 3-on-3 arcade hockey game: flaming power shots, bone-rattling checks, fights, hat tricks and up to 8 local players. Play in your browser or download for Mac.">
+  <meta name="theme-color" content="#050816">
+  <link rel="canonical" href="https://nearbycoder.github.io/ice-riot/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ICE RIOT">
+  <meta property="og:title" content="ICE RIOT — Arcade Hockey Mayhem">
+  <meta property="og:description" content="Free, open-source 3-on-3 arcade hockey. Flaming power shots, power checks, fights and up to 8 players on one couch. Play in your browser.">
+  <meta property="og:url" content="https://nearbycoder.github.io/ice-riot/">
+  <meta property="og:image" content="https://nearbycoder.github.io/ice-riot/media/og-card.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The ICE RIOT logo over a packed, neon-lit hockey arena.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ICE RIOT — Arcade Hockey Mayhem">
+  <meta name="twitter:description" content="Free, open-source 3-on-3 arcade hockey. Flaming power shots, power checks, fights and up to 8 players on one couch.">
+  <meta name="twitter:image" content="https://nearbycoder.github.io/ice-riot/media/og-card.jpg">
+  <meta name="twitter:image:alt" content="The ICE RIOT logo over a packed, neon-lit hockey arena.">
+
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="192x192" href="media/icon-192.png">
+  <link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+
+  <link rel="preload" href="fonts/Anton-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/BarlowSemiCondensed-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="media/logo.webp" as="image" type="image/webp">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    document.documentElement.classList.add("js");
+    // Screenshot fallback: until real captures land in media/shots/, show the Blender renders.
+    function irShotFallback(img) {
+      if (img.dataset.fellBack) return;
+      img.dataset.fellBack = "1";
+      img.src = img.dataset.fallback;
+      if (img.dataset.fallbackAlt) img.alt = img.dataset.fallbackAlt;
+      var btn = img.closest(".shot");
+      if (btn) {
+        btn.dataset.full = img.dataset.fallbackFull || img.dataset.fallback;
+        var b = document.createElement("span");
+        b.className = "wip";
+        b.textContent = "Blender render";
+        btn.appendChild(b);
+      }
+    }
+  </script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="nav-logo" href="#top" aria-label="ICE RIOT home">
+      <img src="media/logo-800.webp" alt="" width="800" height="400">
+    </a>
+    <nav aria-label="Sections">
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#modes">Modes</a></li>
+        <li><a href="#teams">Teams</a></li>
+        <li><a href="#controls">Controls</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#tech">Tech</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <a class="icon-btn" href="https://github.com/nearbycoder/ice-riot" aria-label="ICE RIOT on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+      </a>
+      <a class="btn btn-fire btn-sm js-play" href="play/">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5L7 4.5Z"/></svg>
+        Play<span class="long"> now</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-lights" aria-hidden="true"><span></span><span></span><span></span></div>
+  <canvas id="fx" aria-hidden="true"></canvas>
+
+  <div class="wrap hero-main">
+    <h1 id="hero-title" class="hero-logo">
+      <img src="media/logo.webp" srcset="media/logo-800.webp 800w, media/logo.webp 1600w" sizes="(max-width: 960px) 92vw, 880px" width="1600" height="800" alt="ICE RIOT — Arcade Hockey Mayhem" fetchpriority="high">
+    </h1>
+    <p class="hero-tag">
+      Three-on-three arcade hockey with <strong>flaming pucks</strong>, bone-rattling checks and up to <strong>eight friends</strong> on one couch. Free, open source, and playable right in your browser.
+    </p>
+    <div class="hero-ctas">
+      <a class="btn btn-fire js-play" href="play/">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5L7 4.5Z"/></svg>
+        Play in browser
+      </a>
+      <a class="btn btn-ice" href="https://github.com/nearbycoder/ice-riot/releases/latest/download/IceRiot-macOS.zip">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.3 1.88-3.4 1.97-3.46-1.07-1.57-2.74-1.78-3.33-1.8-1.42-.15-2.77.83-3.49.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.78 2.29-1.61 2.8-.41 6.94 1.16 9.21.77 1.11 1.68 2.36 2.88 2.31 1.16-.05 1.59-.75 2.99-.75 1.4 0 1.79.75 3.01.72 1.24-.02 2.03-1.13 2.79-2.25.88-1.29 1.24-2.54 1.26-2.6-.03-.01-2.42-.93-2.45-3.71ZM14.08 5.85c.64-.77 1.07-1.85.95-2.92-.92.04-2.03.61-2.69 1.38-.59.68-1.11 1.78-.97 2.83 1.02.08 2.07-.52 2.71-1.29Z"/></svg>
+        Download for Mac
+      </a>
+    </div>
+    <p class="cta-note" aria-live="polite">
+      <span class="gpu-chip" id="gpu-chip" data-state="checking"><i aria-hidden="true"></i><span id="gpu-text">Browser build runs on WebGPU (desktop Chrome, Edge or Safari 26+)</span></span>
+    </p>
+    <ul class="hero-meta" aria-label="At a glance">
+      <li>Free &amp; open source</li>
+      <li>1–8 local players</li>
+      <li>Keyboard + gamepads</li>
+      <li>macOS &amp; web</li>
+    </ul>
+  </div>
+
+  <div class="ribbon" aria-hidden="true">
+    <div class="ribbon-track">
+      <span><b>Make some noise!</b> • <em>Ice Riot</em> • <u>Power shot!</u> • <s>Drop the gloves</s> • <b>Hat trick!</b> • <em>Frostbite Cola</em> • <u>8 players</u> • <s>Free &amp; open source</s> • <b>Instant replay</b> • <em>Slapshot Soda</em> • <u>Blazing!</u> •</span>
+      <span><b>Make some noise!</b> • <em>Ice Riot</em> • <u>Power shot!</u> • <s>Drop the gloves</s> • <b>Hat trick!</b> • <em>Frostbite Cola</em> • <u>8 players</u> • <s>Free &amp; open source</s> • <b>Instant replay</b> • <em>Slapshot Soda</em> • <u>Blazing!</u> •</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="stats" aria-label="By the numbers">
+  <div class="wrap">
+    <ul class="stat-grid reveal">
+      <li><span class="stat-num" data-count="8">8</span><span class="stat-label">Local players</span></li>
+      <li><span class="stat-num" data-count="8">8</span><span class="stat-label">Original teams</span></li>
+      <li><span class="stat-num" data-count="6">6</span><span class="stat-label">Camera angles</span></li>
+      <li><span class="stat-num" data-count="5">5</span><span class="stat-label">Difficulties</span></li>
+      <li><span class="stat-num" data-count="173">173</span><span class="stat-label">Synthesized sounds</span></li>
+      <li><span class="stat-num" data-count="48">48</span><span class="stat-label">Animation clips</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ TRAILER (shown only if media/trailer.mp4 exists) ============ -->
+<section class="section trailer" id="trailer" aria-labelledby="trailer-title" hidden>
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="kicker">Trailer</span>
+      <h2 class="section-title" id="trailer-title">Watch the <span class="hot">riot</span></h2>
+    </div>
+    <div class="trailer-frame reveal">
+      <video id="trailer-video" controls playsinline preload="none" poster="media/renders/arena_corner.webp" aria-label="ICE RIOT gameplay trailer"></video>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="section features" id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Features</span>
+      <h2 class="section-title" id="features-title">No rules.<br><span class="hot">All riot.</span></h2>
+      <p class="section-lede">Fast 3-on-3 on a tight arcade rink with turbo, flaming pucks and fights. It plays like the 90s arcade hockey cabinets and their console ports, with smarter AI and a lot more players.</p>
+    </div>
+
+    <div class="signature-grid">
+      <article class="sig-card c-fire reveal">
+        <div class="gag gag-flames" aria-hidden="true"></div>
+        <div>
+          <h3>Power<span>shots</span></h3>
+          <p><b>Shoot + Turbo</b> sets the puck on fire. Bury it and the net goes up in flames, and sometimes the goalie gets knocked in along with the puck.</p>
+          <span class="tagline">Costs ½ turbo · worth it</span>
+        </div>
+        <div class="flip" style="--dur:1s">
+          <img src="media/moves/SlapRelease.webp" width="1800" height="340" loading="lazy" alt="A skater winding up and ripping a slap shot.">
+          <span class="flip-label">Slap shot</span>
+        </div>
+      </article>
+
+      <article class="sig-card c-ice reveal" style="--rd:.08s">
+        <svg class="gag gag-ambulance" viewBox="0 0 92 44" aria-hidden="true">
+          <rect x="2" y="10" width="58" height="24" rx="3" fill="#f4f7ff"/>
+          <path d="M60 16h14l12 10v8H60z" fill="#f4f7ff"/>
+          <path d="M64 19h9l7 6H64z" fill="#7fc8ff"/>
+          <rect x="24" y="14" width="6" height="16" fill="#e3193b"/><rect x="19" y="19" width="16" height="6" fill="#e3193b"/>
+          <rect x="2" y="27" width="84" height="3" fill="#e3193b"/>
+          <rect class="siren" x="30" y="5" width="10" height="5" rx="2" fill="#e3193b"/>
+          <circle cx="18" cy="36" r="6" fill="#111"/><circle cx="70" cy="36" r="6" fill="#111"/>
+          <circle cx="18" cy="36" r="2.5" fill="#aaa"/><circle cx="70" cy="36" r="2.5" fill="#aaa"/>
+        </svg>
+        <div>
+          <h3>Power<span>checks</span></h3>
+          <p><b>Turbo + Shoot</b> on defense launches a skater into orbit. Stick and helmet pop off, the glass rattles, and an ambulance takes the long way across the top of the screen.</p>
+          <span class="tagline">Hover for the gag</span>
+        </div>
+        <div class="flip" style="--dur:1s">
+          <img src="media/moves/PowerCheck.webp" width="1800" height="340" loading="lazy" alt="A skater lowering a shoulder into a power check.">
+          <span class="flip-label">Power check</span>
+        </div>
+      </article>
+
+      <article class="sig-card c-red reveal">
+        <div class="gag-meter" aria-hidden="true"></div>
+        <div>
+          <h3>Drop the<span>gloves</span></h3>
+          <p>Every hit fills the <b>anger meter</b>. When it boils over, play stops: punch, jab, grab, uppercut, block. The winner's team gets full turbo and 15 seconds of <b>RAGE</b>.</p>
+          <span class="tagline">Fights can be toggled off</span>
+        </div>
+        <div class="flip" style="--dur:.9s">
+          <img src="media/moves/FightPunch.webp" width="1800" height="340" loading="lazy" alt="A skater throwing a punch in a fight.">
+          <span class="flip-label">Fight!</span>
+        </div>
+      </article>
+
+      <article class="sig-card c-gold reveal" style="--rd:.08s">
+        <div class="gag gag-hats" aria-hidden="true">
+          <i style="left:8%;--c:#e3193b;--d:0s;--r:240deg"></i>
+          <i style="left:22%;--c:#3ab8ff;--d:.25s;--r:-200deg;--t:1.4s"></i>
+          <i style="left:37%;--c:#ffc93c;--d:.1s;--r:300deg"></i>
+          <i style="left:52%;--c:#1fd1c3;--d:.4s;--r:-260deg;--t:1.8s"></i>
+          <i style="left:66%;--c:#ff2bd6;--d:.15s;--r:180deg"></i>
+          <i style="left:80%;--c:#f4f7ff;--d:.35s;--r:-220deg;--t:1.5s"></i>
+          <i style="left:92%;--c:#ff8a1a;--d:.05s;--r:260deg"></i>
+        </div>
+        <div>
+          <h3>Hat<span>tricks</span></h3>
+          <p>Score three and the hats come raining down. Your skater goes <b>BLAZING</b>, with a fire trail and harder shots, until the other team scores twice.</p>
+          <span class="tagline">Third goal · hats on the ice</span>
+        </div>
+        <div class="flip" style="--dur:1.2s">
+          <img src="media/moves/Celebrate1.webp" width="1800" height="340" loading="lazy" alt="A skater celebrating a goal.">
+          <span class="flip-label">Celebration</span>
+        </div>
+      </article>
+    </div>
+
+    <div class="feature-grid">
+      <article class="f-card wide a-gold reveal">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><path d="M17.32 5H6.68a4 4 0 0 0-3.98 3.59L2 15a3 3 0 0 0 5.2 2.04L9 15h6l1.8 2.04A3 3 0 0 0 22 15l-.7-6.41A4 4 0 0 0 17.32 5Z"/></svg></div>
+        <h3>8-player local multiplayer</h3>
+        <p>Two players share the keyboard and up to eight gamepads plug in, in any mix. Pick a side on the join screen. With 7 or 8 humans the game switches to 4-on-4 automatically.</p>
+      </article>
+      <article class="f-card a-fire reveal" style="--rd:.05s">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18 12 6l7 12"/><circle cx="5" cy="18" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="19" cy="18" r="2"/></svg></div>
+        <h3>One-timers &amp; <span style="white-space:nowrap">give-and-go</span></h3>
+        <p><b>Shoot + Pass</b> sends it and rips the return the moment it arrives. You can call for the puck from CPU teammates too.</p>
+      </article>
+      <article class="f-card a-red reveal" style="--rd:.1s">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3>Instant replays</h3>
+        <p>Every goal gets the horn, the goal light, a close-up of the scorer and a cinematic replay. You can skip it if you're impatient.</p>
+      </article>
+
+      <article class="f-card wide reveal">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7 16 12l7 5V7Z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+        <h3>6 camera angles</h3>
+        <p>Cycle the camera mid-game with <kbd>C</kbd> or the <b>Back</b> button.</p>
+        <ul class="cam-list">
+          <li>Broadcast</li><li>High Broadcast</li><li>Overhead</li><li>End-Zone Chase</li><li>Close Action</li><li>Blimp</li>
+        </ul>
+      </article>
+      <article class="f-card a-green reveal" style="--rd:.05s">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 9h4M12 3v18M5 21h14"/><path d="M5 8l-3 6h6L5 8ZM19 8l-3 6h6l-3-6Z"/></svg></div>
+        <h3>Arcade or Pro rules</h3>
+        <p>Arcade is anything goes. Pro adds icing, offsides, hooking and tripping penalties, and power plays.</p>
+      </article>
+      <article class="f-card a-gold reveal" style="--rd:.1s">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></div>
+        <h3>Tournament mode</h3>
+        <p>An arcade ladder: beat every team in the league. If you lose, you replay the same team until you get past them.</p>
+      </article>
+
+      <article class="f-card reveal">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg></div>
+        <h3>5 difficulties</h3>
+        <p>Very Easy to Very Hard, with CPU AI that actually scales. Comeback catch-up is optional.</p>
+        <div class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </article>
+      <article class="f-card a-neon reveal" style="--rd:.05s">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg></div>
+        <h3>Secret codes</h3>
+        <p>Type them on the menus to get big heads, tiny players, super teams or a fight frenzy. <a href="#cheats">Spoilers below.</a></p>
+      </article>
+      <article class="f-card reveal" style="--rd:.1s">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></div>
+        <h3>Goalie power saves</h3>
+        <p>Pepper a goalie with shots and it starts to glow. The next shot hits a brick wall.</p>
+      </article>
+      <article class="f-card a-fire reveal" style="--rd:.15s">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg></div>
+        <h3>Loud announcer</h3>
+        <p>68 arena-PA calls for goals, saves, hits and fights, with rock, funk and stadium-organ music behind them.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODES ============ -->
+<section class="section modes" id="modes" aria-labelledby="modes-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Game modes</span>
+      <h2 class="section-title" id="modes-title">Pick your <span class="cold">poison</span></h2>
+      <p class="section-lede">Three periods of 1:30, 2:00, 2:30 or 3:00, with sudden-death overtime. Default is 3-on-3 with CPU goalies, and you can switch to 4-on-4.</p>
+    </div>
+    <div class="mode-grid">
+      <article class="mode reveal"><span class="num" aria-hidden="true">01</span><h3>Exhibition</h3><p class="who">1–8 players</p><p>Any teams, any sides, any mix of humans and CPU. This is the one for parties.</p></article>
+      <article class="mode reveal" style="--rd:.05s"><span class="num" aria-hidden="true">02</span><h3>Tournament</h3><p class="who">Arcade ladder</p><p>Work through every team in the league. A loss means a rematch against the same team.</p></article>
+      <article class="mode reveal" style="--rd:.1s"><span class="num" aria-hidden="true">03</span><h3>Practice</h3><p class="who">Shooting · free skate</p><p>Go one-on-one with a goalie, or just skate around and get used to turbo.</p></article>
+      <article class="mode reveal" style="--rd:.15s"><span class="num" aria-hidden="true">04</span><h3>Attract</h3><p class="who">CPU vs CPU</p><p>Leave the title screen alone and the CPU plays a game on its own, like a real cabinet.</p></article>
+    </div>
+    <div class="rules reveal">
+      <div class="rule-col arcade">
+        <h3><span>Arcade</span> rules</h3>
+        <ul>
+          <li class="yes">Default rules, fast and loud</li>
+          <li class="no">No icing</li>
+          <li class="no">No offsides</li>
+          <li class="no">No penalties: hook and trip all you like</li>
+        </ul>
+      </div>
+      <div class="rule-col pro">
+        <h3><span>Pro</span> rules</h3>
+        <ul>
+          <li class="yes">Icing: face-off in your own zone</li>
+          <li class="yes">Offsides: face-off in the offending zone</li>
+          <li class="yes">Hooking &amp; tripping penalties</li>
+          <li class="yes">Penalty box and power plays</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESEARCH ============ -->
+<section class="section research" id="research" aria-labelledby="research-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Scouting report</span>
+      <h2 class="section-title" id="research-title">How the <span class="hot">classics</span> played</h2>
+      <p class="section-lede">Before writing any code we went back to the source material: the instruction manuals and reviews of the 90s arcade hockey cabinets and their console ports. Here's what we kept, and what we fixed.</p>
+    </div>
+    <ol class="scout">
+      <li class="reveal">
+        <div class="then"><h4>The cabinets</h4><p>Three skaters and a goalie per side on a smaller arcade rink. No offsides, no icing, no penalties, just speed.</p></div>
+        <div class="now"><h4>ICE RIOT</h4><p>3-on-3 with CPU goalies and Arcade rules by default. Pro rules are a menu toggle away.</p></div>
+      </li>
+      <li class="reveal">
+        <div class="then"><h4>The cabinets</h4><p>Turbo showed up as a colored ring under your skater's feet and recharged on its own.</p></div>
+        <div class="now"><h4>ICE RIOT</h4><p>Your player ring is also your turbo gauge. Turbo gives +45% top speed, sharper turns and harder hits, and it refills after a short breather.</p></div>
+      </li>
+      <li class="reveal">
+        <div class="then"><h4>The cabinets</h4><p>Shoot + Turbo was the power shot: a fireball that could knock the goalie back into the net.</p></div>
+        <div class="now"><h4>ICE RIOT</h4><p>A flaming puck with a streak behind it. On a goal the whole net bursts into flames. It costs half your turbo.</p></div>
+      </li>
+      <li class="reveal">
+        <div class="then"><h4>The cabinets</h4><p>A big enough check sent a player flying, and an ambulance drove across the top of the screen.</p></div>
+        <div class="now"><h4>ICE RIOT</h4><p>The victim gets launched, stick and helmet pop off, the screen shakes and the glass rattles. Yes, the ambulance is in.</p></div>
+      </li>
+      <li class="reveal">
+        <div class="then"><h4>The cabinets</h4><p>Anger meters boiled over into fights with jabs, punches, grabs and uppercuts. The loser left the ice.</p></div>
+        <div class="now"><h4>ICE RIOT</h4><p>Health bars, four attacks and a block. The loser sits out the play and the winner's team gets full turbo and RAGE.</p></div>
+      </li>
+      <li class="reveal">
+        <div class="then"><h4>The cabinets</h4><p>Four-player multiplayer was the big selling point.</p></div>
+        <div class="now"><h4>ICE RIOT</h4><p>We doubled it to eight: two on one keyboard and up to eight gamepads, in any mix.</p></div>
+      </li>
+      <li class="fix reveal">
+        <div class="then"><h4>What critics said</h4><p>The single-player AI was weak and the commentary got repetitive fast.</p></div>
+        <div class="now"><h4>Fixed</h4><p>The AI is smarter and scales across five difficulties, and the announcer has 68 lines instead of a handful.</p></div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ TEAMS ============ -->
+<section class="section teams" id="teams" aria-labelledby="teams-title">
+  <div class="wrap">
+    <ul class="rafters" aria-hidden="true">
+      <li><img src="media/banners/NAR.webp" width="180" height="360" alt="" loading="lazy"></li>
+      <li><img src="media/banners/INF.webp" width="180" height="360" alt="" loading="lazy"></li>
+      <li><img src="media/banners/YET.webp" width="180" height="360" alt="" loading="lazy"></li>
+      <li><img src="media/banners/HAM.webp" width="180" height="360" alt="" loading="lazy"></li>
+      <li><img src="media/banners/BRW.webp" width="180" height="360" alt="" loading="lazy"></li>
+      <li><img src="media/banners/VIP.webp" width="180" height="360" alt="" loading="lazy"></li>
+      <li><img src="media/banners/GRZ.webp" width="180" height="360" alt="" loading="lazy"></li>
+      <li><img src="media/banners/COM.webp" width="180" height="360" alt="" loading="lazy"></li>
+    </ul>
+    <div class="section-head center reveal">
+      <span class="kicker">The league</span>
+      <h2 class="section-title" id="teams-title">Eight teams.<br><span class="cold">Zero</span> <span class="hot">chill.</span></h2>
+      <p class="section-lede">Every crest, jersey and banner is original and generated procedurally. Pick a team, check its colors, and start some trouble.</p>
+    </div>
+    <ul class="team-grid">
+      <li class="team t-NAR reveal"><div class="team-card" tabindex="0"><span class="team-id">NAR</span><img src="media/crests/NAR.webp" width="384" height="384" loading="lazy" alt="Northport Narwhals crest: a grinning narwhal over waves."><span class="team-city">Northport</span><span class="team-name">Narwhals</span><span class="swatches" aria-label="Teal and navy"><i style="background:#1fb5ad"></i><i style="background:#13234f"></i></span></div></li>
+      <li class="team t-INF reveal" style="--rd:.05s"><div class="team-card" tabindex="0"><span class="team-id">INF</span><img src="media/crests/INF.webp" width="384" height="384" loading="lazy" alt="Brimstone Inferno crest: a horned fireball with a toothy grin."><span class="team-city">Brimstone</span><span class="team-name">Inferno</span><span class="swatches" aria-label="Crimson and orange"><i style="background:#c8102e"></i><i style="background:#ff7a1a"></i></span></div></li>
+      <li class="team t-YET reveal" style="--rd:.1s"><div class="team-card" tabindex="0"><span class="team-id">YET</span><img src="media/crests/YET.webp" width="384" height="384" loading="lazy" alt="Glacier Bay Yetis crest: a roaring ice-blue yeti."><span class="team-city">Glacier Bay</span><span class="team-name">Yetis</span><span class="swatches" aria-label="Ice blue and white"><i style="background:#7cc8f2"></i><i style="background:#f4f9ff"></i></span></div></li>
+      <li class="team t-HAM reveal" style="--rd:.15s"><div class="team-card" tabindex="0"><span class="team-id">HAM</span><img src="media/crests/HAM.webp" width="384" height="384" loading="lazy" alt="Steel Valley Hammers crest: crossed sledgehammers on a gold hexagon."><span class="team-city">Steel Valley</span><span class="team-name">Hammers</span><span class="swatches" aria-label="Black and gold"><i style="background:#111"></i><i style="background:#f2b51c"></i></span></div></li>
+      <li class="team t-BRW reveal"><div class="team-card" tabindex="0"><span class="team-id">BRW</span><img src="media/crests/BRW.webp" width="384" height="384" loading="lazy" alt="Bayou Brawlers crest: a snapping alligator in a gold ring."><span class="team-city">Bayou</span><span class="team-name">Brawlers</span><span class="swatches" aria-label="Green and gold"><i style="background:#2e8a45"></i><i style="background:#e6b82e"></i></span></div></li>
+      <li class="team t-VIP reveal" style="--rd:.05s"><div class="team-card" tabindex="0"><span class="team-id">VIP</span><img src="media/crests/VIP.webp" width="384" height="384" loading="lazy" alt="Neon Coast Vipers crest: a magenta snake coiled on a purple diamond."><span class="team-city">Neon Coast</span><span class="team-name">Vipers</span><span class="swatches" aria-label="Magenta and purple"><i style="background:#ff2bb4"></i><i style="background:#5a1fa8"></i></span></div></li>
+      <li class="team t-GRZ reveal" style="--rd:.1s"><div class="team-card" tabindex="0"><span class="team-id">GRZ</span><img src="media/crests/GRZ.webp" width="384" height="384" loading="lazy" alt="Timber Ridge Grizzlies crest: a snarling brown bear over pine trees."><span class="team-city">Timber Ridge</span><span class="team-name">Grizzlies</span><span class="swatches" aria-label="Brown and orange"><i style="background:#7a4a2a"></i><i style="background:#ff8a1a"></i></span></div></li>
+      <li class="team t-COM reveal" style="--rd:.15s"><div class="team-card" tabindex="0"><span class="team-id">COM</span><img src="media/crests/COM.webp" width="384" height="384" loading="lazy" alt="Rocket City Comets crest: a star-tipped comet orbiting a blue planet."><span class="team-city">Rocket City</span><span class="team-name">Comets</span><span class="swatches" aria-label="Royal blue and red"><i style="background:#1d46c9"></i><i style="background:#ff3341"></i></span></div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ CONTROLS ============ -->
+<section class="section controls" id="controls" aria-labelledby="controls-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Controls</span>
+      <h2 class="section-title" id="controls-title">Six buttons.<br><span class="hot">Infinite</span> chaos.</h2>
+      <p class="section-lede">On offense: tap Shoot for a wrist shot, hold and release for a slap shot. On defense the same buttons check, poke and hook. Gamepads use the Xbox layout; PlayStation pads map to the same positions.</p>
+    </div>
+
+    <div class="ctl-table-wrap reveal">
+      <table class="ctl-table">
+        <caption class="sr-only">Controls for keyboard player 1, keyboard player 2 and gamepad</caption>
+        <thead>
+          <tr>
+            <th scope="col">Action</th>
+            <th scope="col"><span class="p-tag p1">P1</span>Keyboard</th>
+            <th scope="col"><span class="p-tag p2">P2</span>Keyboard</th>
+            <th scope="col"><span class="p-tag pad">Pad</span>Gamepad</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Skate</th>
+            <td data-label="P1"><span class="cluster"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></td>
+            <td data-label="P2" class="kbd-arrows"><span class="sr-only">Arrow keys</span><span class="cluster" aria-hidden="true"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></span></td>
+            <td data-label="Pad"><span class="btn-pad pill">Left stick</span><span class="or">or</span><span class="btn-pad pill">D-pad</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Shoot <small>Tap: wrist shot · hold: slap shot · defense: check</small></th>
+            <td data-label="P1"><kbd>J</kbd><span class="or">or</span><kbd>Space</kbd></td>
+            <td data-label="P2"><kbd>,</kbd></td>
+            <td data-label="Pad"><span class="btn-pad a">A</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Pass <small>Defense: steal (poke check)</small></th>
+            <td data-label="P1"><kbd>K</kbd></td>
+            <td data-label="P2"><kbd>.</kbd></td>
+            <td data-label="Pad"><span class="btn-pad x">X</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Turbo <small>Drains while held, recharges on its own</small></th>
+            <td data-label="P1"><kbd>L</kbd><span class="or">or</span><kbd>L-Shift</kbd></td>
+            <td data-label="P2"><kbd>/</kbd><span class="or">or</span><kbd>R-Shift</kbd></td>
+            <td data-label="Pad"><span class="btn-pad pill">RT</span><span class="or">or</span><span class="btn-pad pill">LT</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Switch player <small>Offense: deke spin</small></th>
+            <td data-label="P1"><kbd>I</kbd></td>
+            <td data-label="P2"><kbd>;</kbd></td>
+            <td data-label="Pad"><span class="btn-pad b">B</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Hook <small>Offense: drop pass</small></th>
+            <td data-label="P1"><kbd>U</kbd></td>
+            <td data-label="P2"><kbd>'</kbd></td>
+            <td data-label="Pad"><span class="btn-pad y">Y</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Camera</th>
+            <td data-label="P1"><kbd>C</kbd></td>
+            <td data-label="P2"><span class="or">—</span></td>
+            <td data-label="Pad"><span class="btn-pad pill">Back</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Pause</th>
+            <td data-label="P1"><kbd>Esc</kbd><span class="or">or</span><kbd>P</kbd></td>
+            <td data-label="P2"><span class="or">—</span></td>
+            <td data-label="Pad"><span class="btn-pad pill">Start</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="moves-head reveal">
+      <h3>Combo <span>moves</span></h3>
+      <p>Press two buttons together. Power moves need turbo in the tank.</p>
+    </div>
+    <ul class="move-grid">
+      <li class="move reveal">
+        <div class="flip"><img src="media/moves/SlapRelease.webp" width="1800" height="340" loading="lazy" alt="Power shot animation."></div>
+        <h4>Power shot</h4>
+        <p class="combo"><span class="kbd">Shoot</span><span class="plus">+</span><span class="kbd">Turbo</span></p>
+        <p>The flaming puck. Uses ½ turbo.</p>
+      </li>
+      <li class="move reveal" style="--rd:.05s">
+        <div class="flip"><img src="media/moves/OneTimer.webp" width="1800" height="340" loading="lazy" alt="One-timer animation."></div>
+        <h4>Give-and-go</h4>
+        <p class="combo"><span class="kbd">Shoot</span><span class="plus">+</span><span class="kbd">Pass</span></p>
+        <p>Pass, then one-time the return.</p>
+      </li>
+      <li class="move reveal" style="--rd:.1s">
+        <div class="flip"><img src="media/moves/PowerCheck.webp" width="1800" height="340" loading="lazy" alt="Power check animation."></div>
+        <h4>Power check</h4>
+        <p class="combo"><span class="kbd">Turbo</span><span class="plus">+</span><span class="kbd">Shoot</span></p>
+        <p>On defense. Calls the ambulance.</p>
+      </li>
+      <li class="move reveal" style="--rd:.15s">
+        <div class="flip"><img src="media/moves/Dive.webp" width="1800" height="340" loading="lazy" alt="Diving poke animation."></div>
+        <h4>Dive</h4>
+        <p class="combo"><span class="kbd">Turbo</span><span class="plus">+</span><span class="kbd">Pass</span></p>
+        <p>A full-stretch poke lunge.</p>
+      </li>
+      <li class="move reveal" style="--rd:.2s">
+        <div class="flip"><img src="media/moves/Hook.webp" width="1800" height="340" loading="lazy" alt="Hook and trip animation."></div>
+        <h4>Trip</h4>
+        <p class="combo"><span class="kbd">Turbo</span><span class="plus">+</span><span class="kbd">Hook</span></p>
+        <p>Legal in Arcade, a penalty in Pro.</p>
+      </li>
+    </ul>
+
+    <div class="moves-head fight reveal">
+      <h3>Fight <span>moves</span></h3>
+      <p>Once the gloves are off, the same buttons are your fists. Knock the other skater out to win.</p>
+    </div>
+    <ul class="move-grid">
+      <li class="move fight reveal">
+        <div class="flip" style="--dur:.9s"><img src="media/moves/FightPunch.webp" width="1800" height="340" loading="lazy" alt="Hard punch animation."></div>
+        <h4>Punch</h4>
+        <p class="combo"><span class="kbd">Shoot</span></p>
+        <p>Big damage, slower.</p>
+      </li>
+      <li class="move fight reveal" style="--rd:.05s">
+        <div class="flip" style="--dur:.8s"><img src="media/moves/FightJab.webp" width="1800" height="340" loading="lazy" alt="Jab animation."></div>
+        <h4>Jab</h4>
+        <p class="combo"><span class="kbd">Pass</span></p>
+        <p>Quick and hard to block.</p>
+      </li>
+      <li class="move fight reveal" style="--rd:.1s">
+        <div class="flip"><img src="media/moves/FightGrab.webp" width="1800" height="340" loading="lazy" alt="Jersey grab animation."></div>
+        <h4>Grab</h4>
+        <p class="combo"><span class="kbd">Hook</span></p>
+        <p>Grab the jersey and pull them in.</p>
+      </li>
+      <li class="move fight reveal" style="--rd:.15s">
+        <div class="flip"><img src="media/moves/FightUppercut.webp" width="1800" height="340" loading="lazy" alt="Uppercut animation."></div>
+        <h4>Uppercut</h4>
+        <p class="combo"><span class="kbd">Turbo</span><span class="plus">+</span><span class="kbd">Shoot</span></p>
+        <p>The finisher.</p>
+      </li>
+      <li class="move fight reveal" style="--rd:.2s">
+        <div class="flip"><img src="media/moves/FightBlock.webp" width="1800" height="340" loading="lazy" alt="Block animation."></div>
+        <h4>Block</h4>
+        <p class="combo"><span class="kbd">Switch</span></p>
+        <p>Cover up and wait for an opening.</p>
+      </li>
+    </ul>
+
+    <div class="cheats reveal" id="cheats">
+      <div class="cheats-head">
+        <h3>Secret <span>codes</span></h3>
+        <p>Type these on the title or options screen and the game confirms with a sound. They also work on this page, so go ahead and type one now.</p>
+      </div>
+      <ul class="cheat-grid">
+        <li class="cheat" data-code="BIGHEAD"><code><b>BIG</b>HEAD</code><span>Big heads for everyone.</span></li>
+        <li class="cheat" data-code="TINY"><code><b>TI</b>NY</code><span>Tiny players.</span></li>
+        <li class="cheat" data-code="ALLSTAR"><code><b>ALL</b>STAR</code><span>Super teams.</span></li>
+        <li class="cheat" data-code="FRENZY"><code><b>FREN</b>ZY</code><span>Fight frenzy: the gloves come off a lot more often.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section class="section gallery" id="gallery" aria-labelledby="gallery-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Gallery</span>
+      <h2 class="section-title" id="gallery-title">Instant <span class="cold">replay</span></h2>
+      <p class="section-lede">Arena, rink, skaters and crests, every one of them generated by script. Click any shot to see it full size.</p>
+    </div>
+    <ul class="gallery-grid">
+      <li class="reveal"><button class="shot" type="button" data-full="media/shots/shot_title.jpg"><img src="media/shots/shot_title.jpg" loading="lazy" width="1600" height="900" alt="ICE RIOT title screen." data-fallback="media/renders/arena_corner.webp" data-fallback-alt="Render of the ICE RIOT arena from the upper corner: a packed crowd and a center-hung jumbotron." onerror="irShotFallback(this)"><span class="cap">Title screen</span></button></li>
+      <li class="reveal" style="--rd:.05s"><button class="shot" type="button" data-full="media/shots/shot_faceoff.jpg"><img src="media/shots/shot_faceoff.jpg" loading="lazy" width="1600" height="900" alt="Opening face-off at center ice." data-fallback="media/renders/rink_gamecam-800.webp" data-fallback-full="media/renders/rink_gamecam.webp" data-fallback-alt="Render of the rink from the game camera, with center-ice logo and face-off dots." onerror="irShotFallback(this)"><span class="cap">Face-off</span></button></li>
+      <li class="reveal" style="--rd:.1s"><button class="shot" type="button" data-full="media/shots/shot_powershot.jpg"><img src="media/shots/shot_powershot.jpg" loading="lazy" width="1600" height="900" alt="A flaming power shot streaking toward the net." data-fallback="media/renders/arena_gamecam-800.webp" data-fallback-full="media/renders/arena_gamecam.webp" data-fallback-alt="Render of the broadcast camera view across the rink and crowd." onerror="irShotFallback(this)"><span class="cap">Power shot</span></button></li>
+      <li class="reveal" style="--rd:.15s"><button class="shot" type="button" data-full="media/shots/shot_goal.jpg"><img src="media/shots/shot_goal.jpg" loading="lazy" width="1600" height="900" alt="Goal! The goal light flashes behind the net." data-fallback="media/renders/rink_net-800.webp" data-fallback-full="media/renders/rink_net.webp" data-fallback-alt="Render of the net and goal light with original sponsor boards." onerror="irShotFallback(this)"><span class="cap">Goal!</span></button></li>
+      <li class="reveal"><button class="shot" type="button" data-full="media/shots/shot_fight.jpg"><img src="media/shots/shot_fight.jpg" loading="lazy" width="1600" height="900" alt="Two skaters fighting with health bars on screen." data-fallback="media/renders/arena_benches-800.webp" data-fallback-full="media/renders/arena_benches.webp" data-fallback-alt="Render of the team benches and penalty boxes." onerror="irShotFallback(this)"><span class="cap">Fight!</span></button></li>
+      <li class="reveal" style="--rd:.05s"><button class="shot" type="button" data-full="media/shots/shot_replay.jpg"><img src="media/shots/shot_replay.jpg" loading="lazy" width="1600" height="900" alt="Cinematic instant replay of a goal." data-fallback="media/renders/arena_up-800.webp" data-fallback-full="media/renders/arena_up.webp" data-fallback-alt="Render looking up at the jumbotron, rafters and team banners." onerror="irShotFallback(this)"><span class="cap">Instant replay</span></button></li>
+      <li class="reveal" style="--rd:.1s"><button class="shot" type="button" data-full="media/shots/shot_teamselect.jpg"><img src="media/shots/shot_teamselect.jpg" loading="lazy" width="1600" height="900" alt="Team select screen." data-fallback="media/renders/branding_crests-800.webp" data-fallback-full="media/renders/branding_crests.webp" data-fallback-alt="All eight original team crests." onerror="irShotFallback(this)"><span class="cap">Team select</span></button></li>
+      <li class="reveal" style="--rd:.15s"><button class="shot" type="button" data-full="media/shots/shot_join.jpg"><img src="media/shots/shot_join.jpg" loading="lazy" width="1600" height="900" alt="Join screen with players picking sides." data-fallback="media/renders/sk_skater_front-800.webp" data-fallback-full="media/renders/sk_skater_front.webp" data-fallback-alt="Render of a Northport Narwhals skater in full gear." onerror="irShotFallback(this)"><span class="cap">Join in</span></button></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ TECH ============ -->
+<section class="section tech" id="tech" aria-labelledby="tech-title">
+  <div class="wrap tech-grid">
+    <div class="reveal">
+      <span class="kicker">Under the hood</span>
+      <h2 class="section-title" id="tech-title">Every asset<br>is <span class="hot">code</span></h2>
+      <p class="section-lede">The repo has no hand-made art and no sample packs. Scripts build every model, texture, animation and sound, and the whole thing is open source.</p>
+      <ol class="pipeline">
+        <li><span class="step">01</span><div><h3>Procedural art in Blender</h3><p>Python scripts build the rink, the arena and its crowd, the skaters and goalies, 48 animation clips, and every crest and banner. Run them again and you get the same assets.</p></div></li>
+        <li><span class="step">02</span><div><h3>Every sound synthesized</h3><p>173 sounds made with numpy DSP: Karplus–Strong guitars, FM e-piano, a drawbar organ and a synthesized rock kit, plus 5 original music tracks and an announcer run through an arena-PA chain.</p></div></li>
+        <li><span class="step">03</span><div><h3>Unreal Engine 5.9 &amp; C++</h3><p>Gameplay, AI, the six cameras, replays and the HUD are all written in C++.</p></div></li>
+        <li><span class="step">04</span><div><h3>Ships to Mac &amp; the web</h3><p>There's a native macOS build, plus Unreal's WebAssembly/WebGPU export so you can play in a browser tab.</p></div></li>
+      </ol>
+      <div class="term" role="img" aria-label="Example build commands"><span class="c"># regenerate everything from source</span>
+<span class="p">$</span> blender -b -P Blender/gen_arena.py
+<span class="p">$</span> python Tools/gen_audio.py      <span class="c"># 173 WAVs, verified</span>
+<span class="p">$</span> Tools/package.sh mac            <span class="c"># → IceRiot.app</span>
+<span class="p">$</span> Tools/package.sh web            <span class="c"># → play/ (Wasm + WebGPU)</span></div>
+      <p style="margin-top:22px"><a class="btn btn-ghost btn-sm" href="https://github.com/nearbycoder/ice-riot">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+        Read the source</a></p>
+    </div>
+    <div class="tech-visual reveal" style="--rd:.1s">
+      <div class="main"><img src="media/renders/arena_corner-800.webp" srcset="media/renders/arena_corner-800.webp 800w, media/renders/arena_corner.webp 1600w" sizes="(max-width: 900px) 92vw, 600px" width="1600" height="900" loading="lazy" alt="Blender render of the procedurally generated arena: thousands of crowd members around the rink under a center-hung jumbotron."></div>
+      <div class="inset"><img src="media/renders/sk_skater_front-800.webp" width="800" height="533" loading="lazy" alt="Blender render of a procedurally generated skater in Northport Narwhals colors."></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="section final" aria-labelledby="final-title">
+  <div class="wrap">
+    <span class="kicker">Puck drop</span>
+    <h2 class="section-title" id="final-title">Hit the <span class="hot">ice</span></h2>
+    <p class="section-lede" style="margin:18px auto 0">Grab a gamepad, or three. It's free.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-fire js-play" href="play/">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5L7 4.5Z"/></svg>
+        Play in browser
+      </a>
+      <a class="btn btn-ice" href="https://github.com/nearbycoder/ice-riot/releases/latest/download/IceRiot-macOS.zip">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.3 1.88-3.4 1.97-3.46-1.07-1.57-2.74-1.78-3.33-1.8-1.42-.15-2.77.83-3.49.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.78 2.29-1.61 2.8-.41 6.94 1.16 9.21.77 1.11 1.68 2.36 2.88 2.31 1.16-.05 1.59-.75 2.99-.75 1.4 0 1.79.75 3.01.72 1.24-.02 2.03-1.13 2.79-2.25.88-1.29 1.24-2.54 1.26-2.6-.03-.01-2.42-.93-2.45-3.71ZM14.08 5.85c.64-.77 1.07-1.85.95-2.92-.92.04-2.03.61-2.69 1.38-.59.68-1.11 1.78-.97 2.83 1.02.08 2.07-.52 2.71-1.29Z"/></svg>
+        Download for Mac
+      </a>
+    </div>
+    <p class="cta-note">
+      Mac build: unzip it and open <b>IceRiot.app</b>. If macOS blocks the first launch, go to System Settings → Privacy &amp; Security and click <b>Open Anyway</b>.
+      <br><a href="https://github.com/nearbycoder/ice-riot/releases">All releases &amp; notes</a>
+    </p>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <img class="flogo" src="media/logo-800.webp" width="800" height="400" alt="ICE RIOT" loading="lazy">
+        <p>An original, open-source arcade hockey game, inspired by the 90s arcade hockey cabinets and their console ports.</p>
+      </div>
+      <div>
+        <h2>Play</h2>
+        <ul>
+          <li><a class="js-play" href="play/">Play in browser</a></li>
+          <li><a href="https://github.com/nearbycoder/ice-riot/releases/latest/download/IceRiot-macOS.zip">Download for Mac</a></li>
+          <li><a href="https://github.com/nearbycoder/ice-riot/releases">All releases</a></li>
+          <li><a href="#controls">Controls</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Source</h2>
+        <ul>
+          <li><a href="https://github.com/nearbycoder/ice-riot">GitHub repository</a></li>
+          <li><a href="https://github.com/nearbycoder/ice-riot/issues">Report a bug</a></li>
+          <li><a href="https://github.com/nearbycoder/ice-riot/blob/main/LICENSE">MIT License</a></li>
+          <li><a href="fonts/OFL-anton.txt">Font licenses (OFL)</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="fine">
+      © 2026 ICE RIOT contributors. The code is released under the MIT License. All teams, players, logos, arenas, sponsors, music and announcer lines are original works made for this project. Fonts: Anton and Barlow Semi Condensed (SIL Open Font License). Built with Blender and Unreal Engine; Unreal Engine is a trademark of Epic Games, Inc.
+    </p>
+  </div>
+</footer>
+
+<!-- No-WebGPU dialog -->
+<dialog class="modal" id="gpu-dialog" aria-labelledby="gpu-dialog-title">
+  <div class="modal-body">
+    <button class="icon-btn modal-x" type="button" data-close aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <h2 id="gpu-dialog-title">Ice too thin here</h2>
+    <p id="gpu-dialog-text">The browser build runs on <b>WebGPU</b>, and this browser doesn't seem to have it. Try a recent desktop <b>Chrome</b> or <b>Edge</b>, or <b>Safari 26+</b> on macOS. You'll also want a keyboard or gamepad.</p>
+    <p>On a Mac you can grab the native build instead.</p>
+    <div class="row">
+      <a class="btn btn-ice btn-sm" href="https://github.com/nearbycoder/ice-riot/releases/latest/download/IceRiot-macOS.zip">Download for Mac</a>
+      <a class="btn btn-ghost btn-sm" href="play/" id="gpu-anyway">Try anyway</a>
+    </div>
+  </div>
+</dialog>
+
+<!-- Gallery lightbox -->
+<dialog class="lightbox" id="lightbox" aria-label="Screenshot viewer">
+  <img id="lightbox-img" src="data:," alt="">
+  <div class="lightbox-bar">
+    <p id="lightbox-cap"></p>
+    <div class="nav-btns">
+      <button class="icon-btn" type="button" id="lb-prev" aria-label="Previous screenshot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="icon-btn" type="button" id="lb-next" aria-label="Next screenshot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="icon-btn" type="button" data-close aria-label="Close viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

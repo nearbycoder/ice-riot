@@ -174,6 +174,7 @@ public:
 	TWeakObjectPtr<AIRPlayer> LastAssist;
 	bool bLastGoalPower = false;
 	float LastShotTime = -100.f;
+	float PrevShotTime = -100.f;
 	float LastFightTime = -100.f;
 	float FaceoffDropTime = 0.f;
 	bool bFaceoffDropped = false;

@@ -1,0 +1,3 @@
+# The Unreal Wasm/WebGPU build is dropped here locally for testing and deployed from the
+# IceRiot-Web.zip release asset by .github/workflows/pages.yml. Never commit it.
+/play/

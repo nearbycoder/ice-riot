@@ -1,0 +1,82 @@
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Copy marketing site
+        run: |
+          mkdir -p _site
+          cp -R site/. _site/
+
+      - name: Add browser build from the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          dl="$RUNNER_TEMP/web-dl"
+          mkdir -p "$dl"
+          # On a release event use that release; otherwise the repo's latest release.
+          if ! gh release download ${RELEASE_TAG:+"$RELEASE_TAG"} \
+                --repo "$GITHUB_REPOSITORY" --pattern "IceRiot-Web.zip" --dir "$dl"; then
+            echo "::notice::No IceRiot-Web.zip release asset found; deploying the site without play/."
+            exit 0
+          fi
+          unz="$RUNNER_TEMP/web-unzipped"
+          mkdir -p "$unz"
+          unzip -q "$dl/IceRiot-Web.zip" -d "$unz"
+          # If the zip wraps everything in one top-level folder, deploy that folder's contents.
+          src="$unz"
+          if [ ! -f "$unz/index.html" ]; then
+            entries=$(find "$unz" -mindepth 1 -maxdepth 1 | wc -l)
+            if [ "$entries" -eq 1 ] && [ -d "$(find "$unz" -mindepth 1 -maxdepth 1)" ]; then
+              src="$(find "$unz" -mindepth 1 -maxdepth 1)"
+            fi
+          fi
+          rm -rf _site/play
+          mkdir -p _site/play
+          cp -R "$src"/. _site/play/
+          echo "Browser build: $(du -sh _site/play | cut -f1)"
+          [ -f _site/play/index.html ] || echo "::warning::play/ has no index.html"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

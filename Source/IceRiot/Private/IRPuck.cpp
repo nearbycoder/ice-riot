@@ -43,6 +43,7 @@ void AIRPuck::SetCarried(AIRPlayer* InCarrier)
 		bFrozen = false;
 		SaveGoalie = nullptr;
 		bShotOnTarget = false;
+		bBeatGoalie = false;
 		if (!InCarrier->bBlazing)
 		{
 			bOnFire = false;
@@ -57,6 +58,7 @@ void AIRPuck::Release(const FVector& Velocity, EIRShotKind InKind, AIRPlayer* By
 	Vel = Velocity;
 	Kind = InKind;
 	FlightTime = 0.f;
+	bBeatGoalie = false;
 	if (By)
 	{
 		LastTouch = By;
