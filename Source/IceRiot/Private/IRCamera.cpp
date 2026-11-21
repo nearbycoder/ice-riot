@@ -232,7 +232,7 @@ void AIRCamera::ComputeShot(float Dt, FVector& OutLoc, FRotator& OutRot, float& 
 		if (ReplayAngle == 0)
 		{
 			// behind the net, looking out at the shooter
-			OutLoc = FVector((IRRink::GoalLineX + 420.f) * Sign, 120.f, 260.f);
+			OutLoc = FVector((IRRink::GoalLineX + 250.f) * Sign, 140.f, 330.f);
 			OutRot = (FVector(P.X, P.Y, 40.f) - OutLoc).Rotation();
 			OutFov = FMath::Clamp(FVector::Dist(OutLoc, P) / 40.f, 22.f, 55.f);
 		}

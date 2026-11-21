@@ -267,20 +267,33 @@ void UIRFX::FireBurst(const FVector& P, float Scale)
 
 void UIRFX::FireTrail(const FVector& P, const FVector& Vel)
 {
-	for (int32 i = 0; i < 2; ++i)
+	// licking flames left behind the puck
+	for (int32 i = 0; i < 4; ++i)
 	{
 		FPart X;
-		X.P = P + FMath::VRand() * 4.f;
-		X.V = -Vel * 0.05f + FVector(0, 0, FMath::FRandRange(40.f, 140.f));
-		X.Life = X.MaxLife = FMath::FRandRange(0.18f, 0.4f);
-		X.Size0 = FMath::FRandRange(18.f, 32.f);
-		X.Size1 = 4.f;
-		X.C = FLinearColor(1.f, FMath::FRandRange(0.3f, 0.7f), 0.05f, 1.f) * 2.2f;
+		X.P = P + FMath::VRand() * 6.f - Vel * (0.004f * i);
+		X.V = -Vel * 0.06f + FVector(FMath::FRandRange(-40.f, 40.f), FMath::FRandRange(-40.f, 40.f), FMath::FRandRange(80.f, 220.f));
+		X.Life = X.MaxLife = FMath::FRandRange(0.22f, 0.45f);
+		X.Size0 = FMath::FRandRange(34.f, 58.f);
+		X.Size1 = 8.f;
+		const float H = FMath::FRand();
+		X.C = FLinearColor(1.f, FMath::Lerp(0.12f, 0.45f, H), 0.f, 1.f) * 0.75f;
 		X.C.A = 1.f;
-		X.Drag = 3.f; X.Gravity = -200.f; X.Rot = FMath::FRandRange(0.f, 360.f); X.RotV = 200.f;
+		X.Drag = 2.5f; X.Gravity = -260.f; X.Rot = FMath::FRandRange(0.f, 360.f); X.RotV = FMath::FRandRange(-260.f, 260.f);
 		X.Kind = KAlpha; X.bFlat = false; X.bStretch = false; X.bGround = false;
 		Add(X);
 	}
+	// hot core on the puck itself
+	FPart C;
+	C.P = P + FVector(0, 0, 8.f);
+	C.V = FVector::ZeroVector;
+	C.Life = C.MaxLife = 0.06f;
+	C.Size0 = C.Size1 = 70.f;
+	C.C = FLinearColor(1.f, 0.6f, 0.1f, 1.f) * 0.9f;
+	C.C.A = 1.f;
+	C.Drag = 0.f; C.Gravity = 0.f; C.Rot = FMath::FRandRange(0.f, 360.f); C.RotV = 0.f;
+	C.Kind = KAlpha; C.bFlat = false; C.bStretch = false; C.bGround = false;
+	Add(C);
 }
 
 void UIRFX::Streak(const FVector& P, const FLinearColor& C, float Size)

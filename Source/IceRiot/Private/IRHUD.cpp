@@ -378,7 +378,7 @@ void AIRHUD::DrawCallouts(AIRGameMode* Game)
 			Text(Canvas, C.Text, W * 0.5f, Y, Sz, WithA(FLinearColor::White, Out), Center, true, 0.f, WithA(C.Color, Out), 7 * S * Sc);
 			if (!C.Sub.IsEmpty())
 			{
-				Text(Canvas, C.Sub, W * 0.5f, CY + Sz * 0.42f + 16 * S, 40 * S, WithA(FLinearColor::White, Out * FMath::Clamp((U - 0.2f) / 0.2f, 0.f, 1.f)), Center, true, 3 * S);
+				Text(Canvas, C.Sub, W * 0.5f, CY + Sz * 0.42f + 26 * S, 40 * S, WithA(FLinearColor::White, Out * FMath::Clamp((U - 0.2f) / 0.2f, 0.f, 1.f)), Center, true, 3 * S);
 			}
 		}
 		else if (C.Style == 1)
@@ -509,11 +509,11 @@ void AIRHUD::DrawTitle(AIRGameMode* Game)
 	Gradient(Canvas, 0, 0, W, H * 0.3f, FLinearColor(0.f, 0.01f, 0.03f, 0.7f), FLinearColor(0, 0, 0, 0.f));
 	const float In = FMath::Clamp(Game->ScreenTime / 0.5f, 0.f, 1.f);
 	DrawLogo(W * 0.5f, H * 0.16f - (1.f - EaseOutBack(In)) * 200 * S, 1.f, In);
-	Text(Canvas, TEXT("ARCADE HOCKEY · UP TO 8 PLAYERS"), W * 0.5f, H * 0.47f, 34 * S, WithA(FLinearColor::White, In), Center, true, 3 * S);
+	Text(Canvas, TEXT("ARCADE HOCKEY · UP TO 8 PLAYERS"), W * 0.5f, H * 0.16f + 470 * S, 34 * S, WithA(FLinearColor::White, In), Center, true, 3 * S);
 	const float Blink = 0.55f + 0.45f * FMath::Sin(T * 4.f);
-	Slant(Canvas, W * 0.5f - 260 * S, H * 0.7f, 520 * S, 74 * S, 20 * S, WithA(Hot, 0.9f * Blink));
-	Text(Canvas, TEXT("PRESS START"), W * 0.5f, H * 0.7f + 10 * S, 56 * S, FLinearColor::White, Center, true, 3 * S);
-	Text(Canvas, TEXT("ENTER / SPACE / ANY GAMEPAD BUTTON"), W * 0.5f, H * 0.7f + 90 * S, 22 * S, Dim, Center, false);
+	Slant(Canvas, W * 0.5f - 260 * S, H * 0.74f, 520 * S, 74 * S, 20 * S, WithA(Hot, 0.9f * Blink));
+	Text(Canvas, TEXT("PRESS START"), W * 0.5f, H * 0.74f + 10 * S, 56 * S, FLinearColor::White, Center, true, 3 * S);
+	Text(Canvas, TEXT("ENTER / SPACE / ANY GAMEPAD BUTTON"), W * 0.5f, H * 0.74f + 90 * S, 22 * S, Dim, Center, false);
 	Text(Canvas, TEXT("© ICE RIOT CONTRIBUTORS · OPEN SOURCE · MADE WITH BLENDER + UNREAL ENGINE"), W * 0.5f, H - 40 * S, 18 * S, WithA(Dim, 0.7f), Center, false);
 }
 

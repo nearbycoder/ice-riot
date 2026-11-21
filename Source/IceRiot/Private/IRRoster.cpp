@@ -33,7 +33,7 @@ namespace
 			  { TEXT("Sully"), TEXT("Brennan"), 28, 7, 7, 6, 6, 7, 6, 7, 0.0f, 1.02f, 1.04f, false },
 			  { TEXT("Niko"), TEXT("Petrakis"), 3, 6, 8, 6, 6, 7, 5, 6, 0.3f, 1.03f, 1.06f, true } },
 			{ TEXT("Gus"), TEXT("Moreau"), 35, 5, 5, 5, 5, 5, 5, 5, 0.2f, 1.03f, 1.04f, false }, 6, false },
-		{ TEXT("YET"), TEXT("Glacier Bay"), TEXT("Yetis"), TEXT("GLB"), FLinearColor(0.22f, 0.55f, 0.95f), White, FLinearColor(0.45f, 0.5f, 0.56f), 3,
+		{ TEXT("YET"), TEXT("Glacier Bay"), TEXT("Yetis"), TEXT("GLB"), FLinearColor(0.025f, 0.2f, 0.62f), White, FLinearColor(0.45f, 0.5f, 0.56f), 3,
 			{ { TEXT("Bjorn"), TEXT("Eklund"), 8, 6, 7, 6, 7, 8, 6, 7, 0.0f, 1.06f, 1.1f, false },
 			  { TEXT("Wes"), TEXT("Harlan"), 33, 6, 6, 6, 6, 9, 5, 8, 0.15f, 1.06f, 1.12f, false },
 			  { TEXT("Ivan"), TEXT("Sorokin"), 14, 7, 7, 7, 7, 6, 7, 6, 0.05f, 1.0f, 1.02f, true },

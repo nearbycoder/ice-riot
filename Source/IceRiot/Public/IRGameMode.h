@@ -237,6 +237,7 @@ public:
 	bool bAutopilot = false;     // -irautopilot: human slot 0 driven by AI through the human path
 	float SimSpeed = 1.f;
 	bool bSimExit = false;
+	bool bTestPowerShots = false;   // -irpowershots: the AI favors power shots (screenshots)
 
 private:
 	void TickMenus(float Dt);

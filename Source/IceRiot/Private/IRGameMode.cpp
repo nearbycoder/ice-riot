@@ -162,6 +162,7 @@ void AIRGameMode::StartPlay()
 	if (FParse::Param(Cmd, TEXT("irbighead"))) { Opt.bBigHeads = true; }
 	if (FParse::Param(Cmd, TEXT("irfrenzy"))) { Opt.bFightFrenzy = true; }
 	if (FParse::Param(Cmd, TEXT("irpro"))) { Opt.Rules = EIRRules::Pro; }
+	bTestPowerShots = FParse::Param(Cmd, TEXT("irpowershots"));
 	if (FParse::Param(Cmd, TEXT("irarcade"))) { Opt.Rules = EIRRules::Arcade; }
 	int32 CamMode = -1;
 	if (FParse::Value(Cmd, TEXT("ircam="), CamMode)) { Opt.Camera = EIRCameraMode(FMath::Clamp(CamMode, 0, 5)); }

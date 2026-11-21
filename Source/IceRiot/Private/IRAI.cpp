@@ -171,7 +171,7 @@ FIRIntent AIRGameMode::ThinkAI(AIRPlayer* P, float Dt)
 				P->ShootComboTimer = 0.f;
 				In.bShootPressed = true;
 				In.bShoot = true;
-				const bool bPower = (P->Turbo > 0.5f || P->Rage > 0.f) && Dist < 1700.f && FMath::FRand() < FMath::Lerp(0.15f, 0.45f, Skill) + (P->Rage > 0.f ? 0.5f : 0.f);
+				const bool bPower = (P->Turbo > 0.5f || P->Rage > 0.f) && Dist < 1700.f && FMath::FRand() < FMath::Lerp(0.15f, 0.45f, Skill) + (P->Rage > 0.f ? 0.5f : 0.f) + (bTestPowerShots ? 0.9f : 0.f);
 				In.bTurbo = bPower;
 				if (bPower) { P->AIChargeTarget = 0.f; }
 				else if (Dist < 850.f || Press > 0.6f) { P->AIChargeTarget = 0.05f; }          // quick wrister
