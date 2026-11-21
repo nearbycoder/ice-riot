@@ -151,7 +151,7 @@ FIRPadState FIRInput::Read(const FIRBinding& B) const
 			S.bPausePressed |= Pr.Contains(EKeys::P);
 			S.bStartPressed |= Pr.Contains(EKeys::Enter);
 			S.bConfirm |= Pr.Contains(EKeys::Enter) || Pr.Contains(EKeys::NumPadOne) || Pr.Contains(EKeys::Comma);
-			S.bBack |= Pr.Contains(EKeys::BackSpace) || Pr.Contains(EKeys::Period) && B.Source == EIRSource::KeyboardB;
+			S.bBack |= Pr.Contains(EKeys::BackSpace) || (Pr.Contains(EKeys::Period) && B.Source == EIRSource::KeyboardB);
 			S.bAnyPressed |= AnyDown(TSet<FKey>(), Pr, { EKeys::Up, EKeys::Down, EKeys::Left, EKeys::Right, EKeys::Comma, EKeys::Period, EKeys::Slash, EKeys::RightShift, EKeys::Semicolon, EKeys::NumPadOne, EKeys::NumPadTwo });
 		}
 		const float Len = M.Size();

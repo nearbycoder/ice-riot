@@ -166,7 +166,7 @@ FIRIntent AIRGameMode::ThinkAI(AIRPlayer* P, float Dt)
 			P->AITimer = FMath::Lerp(0.35f, 0.12f, Skill) + FMath::FRandRange(0.f, 0.15f);
 			const bool bForcedShot = P->ShootComboTimer > 0.f;
 			const float ShootThresh = FMath::Lerp(0.7f, 0.5f, Skill) - Boost * 0.05f - (Press > 0.7f ? 0.12f : 0.f) - FMath::Clamp(P->PossessTime - 2.5f, 0.f, 2.f) * 0.08f;
-			if ((Q > ShootThresh && P->PossessTime > 0.35f && FMath::FRand() < 0.7f) || bForcedShot && Q > 0.05f)
+			if ((Q > ShootThresh && P->PossessTime > 0.35f && FMath::FRand() < 0.7f) || (bForcedShot && Q > 0.05f))
 			{
 				P->ShootComboTimer = 0.f;
 				In.bShootPressed = true;

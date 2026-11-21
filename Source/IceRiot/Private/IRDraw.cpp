@@ -102,7 +102,7 @@ void IRDraw::Image(UCanvas* C, UTexture* T, float X, float Y, float W, float H, 
 
 void IRDraw::Gradient(UCanvas* C, float X, float Y, float W, float H, const FLinearColor& Top, const FLinearColor& Bottom)
 {
-	const int32 N = 12;
+	const int32 N = FMath::Clamp(int32(H / 6.f), 8, 96);
 	for (int32 i = 0; i < N; ++i)
 	{
 		const float A = (i + 0.5f) / N;

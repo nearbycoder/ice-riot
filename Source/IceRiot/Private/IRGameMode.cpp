@@ -161,6 +161,8 @@ void AIRGameMode::StartPlay()
 	FParse::Value(Cmd, TEXT("irdiff="), Opt.Difficulty);
 	if (FParse::Param(Cmd, TEXT("irbighead"))) { Opt.bBigHeads = true; }
 	if (FParse::Param(Cmd, TEXT("irfrenzy"))) { Opt.bFightFrenzy = true; }
+	if (FParse::Param(Cmd, TEXT("irpro"))) { Opt.Rules = EIRRules::Pro; }
+	if (FParse::Param(Cmd, TEXT("irarcade"))) { Opt.Rules = EIRRules::Arcade; }
 	int32 CamMode = -1;
 	if (FParse::Value(Cmd, TEXT("ircam="), CamMode)) { Opt.Camera = EIRCameraMode(FMath::Clamp(CamMode, 0, 5)); }
 
@@ -296,6 +298,8 @@ void AIRGameMode::ClearTeams()
 	}
 	for (int32 t = 0; t < 2; ++t)
 	{
+		for (FIRPenalty& Pen : Penalties[t]) { if (AIRPlayer* P = Pen.P.Get()) { P->Destroy(); } }
+		Penalties[t].Reset();
 		Skaters[t].Reset();
 		Goalies[t] = nullptr;
 	}
@@ -477,6 +481,8 @@ void AIRGameMode::SetPhase(EIRMatchPhase P)
 void AIRGameMode::SetupFaceoff(FVector2D Spot)
 {
 	FaceoffSpot = Spot;
+	if (Arena) { Arena->SetGoalLight(1, false); Arena->SetGoalLight(-1, false); }
+	if (Audio) { Audio->StopLoop(TEXT("NetFire")); }
 	if (Puck)
 	{
 		Puck->SetCarried(nullptr);
@@ -616,7 +622,7 @@ void AIRGameMode::Tick(float DeltaSeconds)
 	TickCheats();
 	TickMenus(RealDt);
 
-	const bool bPaused = Screen == EIRScreen::Pause || Screen == EIRScreen::Options && PauseReturn == EIRScreen::Pause && Mode != EIRMode::Attract;
+	const bool bPaused = Screen == EIRScreen::Pause || (Screen == EIRScreen::Options && PauseReturn == EIRScreen::Pause && Mode != EIRMode::Attract);
 	float Dt = bPaused ? 0.f : RealDt * SimSpeed;
 	if (SlowMoTime > 0.f)
 	{
@@ -648,6 +654,17 @@ void AIRGameMode::Tick(float DeltaSeconds)
 	if (FX && Cam) { FX->Tick(Dt, Cam->GetCamLocation()); }
 	if (Audio) { Audio->Tick(RealDt); }
 	UpdateCallouts(RealDt);
+	// a net that took a power-shot goal keeps burning for a few seconds
+	for (int32 i = 0; i < 2; ++i)
+	{
+		const float Age = GameTime - NetFireTime[i];
+		if (Age >= 0.f && Age < 4.f && FX && Dt > 0.f && FMath::FRand() < Dt * 14.f)
+		{
+			const float Sign = i == 0 ? 1.f : -1.f;
+			FX->FireBurst(FVector((IRRink::GoalLineX + 55.f) * Sign, FMath::FRandRange(-80.f, 80.f), 60.f), 0.45f);
+			if (Audio && Age < 0.1f) { Audio->StartLoop(TEXT("NetFire"), TEXT("Sfx/Fire_Loop"), 0.6f); }
+		}
+	}
 	Autoshot(RealDt);
 }
 
@@ -750,7 +767,7 @@ void AIRGameMode::TickMatch(float Dt)
 		if (PhaseTime > 2.5f)
 		{
 			const bool bTied = Score[0] == Score[1];
-			if (Period >= 3 && !bTied || Mode == EIRMode::Attract && Period >= 3 && (!bTied || Period >= 4))
+			if ((Period >= 3 && !bTied) || (Mode == EIRMode::Attract && Period >= 3 && (!bTied || Period >= 4)))
 			{
 				FinishGame();
 			}

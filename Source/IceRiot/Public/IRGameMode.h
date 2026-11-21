@@ -65,6 +65,13 @@ struct FIRReplayFrame
 	bool bPuckFire = false;
 };
 
+struct FIRPenalty
+{
+	TWeakObjectPtr<AIRPlayer> P;
+	float Time = 0.f;
+	FString Reason;
+};
+
 struct FIRFightState
 {
 	TWeakObjectPtr<AIRPlayer> A, B;
@@ -106,6 +113,10 @@ public:
 	void OnPoke(AIRPlayer* Attacker);
 	void OnHook(AIRPlayer* Attacker, bool bTrip);
 	void OnSpin(AIRPlayer* Carrier);
+	void CallPenalty(AIRPlayer* P, const FString& Reason);
+	void ReleasePenalty(int32 InTeam);
+	void TickPenalties(float Dt);
+	void TickProRules(float Dt);
 	void OnPlayerHitBoards(AIRPlayer* P, float Speed);
 	void OnFaceoffDrop();
 	void OnGoalieCleared(AIRPlayer* Goalie);
@@ -204,7 +215,11 @@ public:
 	float ReplayStart = 0.f, ReplayEnd = 0.f;
 	bool bReplaying = false;
 
-	TArray<TObjectPtr<AIRPlayer>> Skaters[2];   // actors stay alive through the world
+	TArray<TObjectPtr<AIRPlayer>> Skaters[2];
+	TArray<FIRPenalty> Penalties[2];
+	float PrevPuckX = 0.f;
+	bool bIcingCandidate = false;
+	int32 IcingTeam = -1;   // actors stay alive through the world
 	UPROPERTY() TObjectPtr<AIRPlayer> Goalies[2];
 	UPROPERTY() TObjectPtr<AIRPlayer> Referee;
 	UPROPERTY() TObjectPtr<AIRPuck> Puck;

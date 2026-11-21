@@ -1007,7 +1007,7 @@ void AIRPlayer::SimulateFight(float Dt, const FIRIntent& In)
 	{
 	case EIRAction::FightIdle:
 		if (AnimInst && !AnimInst->IsFinished() == false) { AnimInst->Play(A(TEXT("A_FightIdle")), true, 1.f, 0.15f); }
-		if (In.bSwitchPressed || In.bHook && In.bTurbo)
+		if (In.bSwitchPressed || (In.bHook && In.bTurbo))
 		{
 			StartAction(EIRAction::FightBlock, 0.5f);
 			PlayOneShot(A(TEXT("A_FightBlock")), 1.f, 0.05f);
@@ -1093,7 +1093,7 @@ void AIRPlayer::TakeHit(AIRPlayer* From, float Power, bool bPowerCheck, FVector2
 		return;
 	}
 	const float Balance = 0.28f + Power * 0.45f - (Info.R.Check - 5) * 0.035f - (Info.Bulk - 1.f) * 1.2f;
-	if (FMath::FRand() < Balance || HasPuck() && FMath::FRand() < 0.5f)
+	if (FMath::FRand() < Balance || (HasPuck() && FMath::FRand() < 0.5f))
 	{
 		StartAction(EIRAction::Down, kFallLen + 0.35f);
 		Vel = Dir * 620.f + Vel * 0.3f;
@@ -1302,6 +1302,11 @@ void AIRPlayer::UpdateVisuals(float Dt)
 				Game->Sfx(TEXT("Sfx/Skate_Stride"), GetPos3(), FMath::Clamp(Sp / 1200.f, 0.15f, 0.55f), FMath::FRandRange(0.92f, 1.08f));
 			}
 		}
+		if (bStopping && !bWasStopping)
+		{
+			Game->Sfx(TEXT("Sfx/Skate_Stop"), GetPos3(), FMath::Clamp(Sp / 900.f, 0.35f, 1.f), FMath::FRandRange(0.95f, 1.05f));
+			if (Game->FX) { Game->FX->IceSpray(GetPos3() + FVector(Forward() * 25.f, 0.f), Vel.GetSafeNormal(), 2.2f); }
+		}
 		if (bStopping)
 		{
 			SprayTimer -= Dt;
@@ -1310,9 +1315,9 @@ void AIRPlayer::UpdateVisuals(float Dt)
 				SprayTimer = 0.035f;
 				if (Game->FX) { Game->FX->IceSpray(GetPos3() + FVector(Forward() * 20.f, 0.f), Vel.GetSafeNormal(), FMath::Clamp(Sp / 700.f, 0.4f, 1.5f)); }
 			}
-			if (SprayTimer > 0.03f) {}
 		}
 	}
+	bWasStopping = bStopping;
 }
 
 void AIRPlayer::FireActionEvent()

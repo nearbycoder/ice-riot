@@ -96,7 +96,10 @@ void AIRGameMode::TickLive(float Dt)
 			}
 		}
 		UpdatePuckInteractions(Dt);
+		if (Phase != EIRMatchPhase::Live) { return; }
+		TickProRules(Dt);
 	}
+	TickPenalties(Dt);
 	RecordReplay();
 
 	// practice: reset the puck after each attempt
@@ -295,6 +298,7 @@ void AIRGameMode::UpdatePuckInteractions(float Dt)
 		}
 		Puck->SetCarried(Best);
 		Puck->SaveGoalie = nullptr;
+		bIcingCandidate = false;
 		Best->OneTimerWindow = 0.f;
 		Best->bAutoOneTimer = false;
 		Sfx(TEXT("Sfx/Stick_Handle"), PP, 0.5f);
@@ -633,7 +637,7 @@ void AIRGameMode::PreRollShot(AIRPlayer* Shooter, EIRShotKind Kind, float Power)
 	// difficulty: humans face better goalies on hard, CPU shooters are kinder on easy
 	if (Mode != EIRMode::Attract)
 	{
-		const bool bHumanShooter = Shooter->HumanIndex >= 0 || Shooter->LastHumanIndex >= 0 && Shooter->Team == (Humans.Num() ? Humans[0].Team : 0);
+		const bool bHumanShooter = Shooter->HumanIndex >= 0 || (Shooter->LastHumanIndex >= 0 && Shooter->Team == (Humans.Num() ? Humans[0].Team : 0));
 		P += bHumanShooter ? (Opt.Difficulty - 2) * 0.035f : -(Opt.Difficulty - 2) * 0.03f;
 	}
 	P -= CatchupBoost[Shooter->Team] * 0.04f;
@@ -944,10 +948,12 @@ void AIRGameMode::OnHook(AIRPlayer* Att, bool bTrip)
 		C->NoPickupTime = 0.8f;
 		Callout(TEXT("TRIPPED!"), FString(), FLinearColor(1.f, 0.6f, 0.2f), 1.f, 1);
 		Crowd(0.2f, TEXT("Crowd_Boo"));
+		if (Opt.Rules == EIRRules::Pro && FMath::FRand() < 0.75f) { CallPenalty(Att, TEXT("TRIPPING")); }
 	}
 	else
 	{
 		C->HookedTime = 0.9f;
+		if (Opt.Rules == EIRRules::Pro && FMath::FRand() < 0.22f) { CallPenalty(Att, TEXT("HOOKING")); return; }
 		if (FMath::FRand() < 0.3f + (Att->Info.R.Hands - C->Info.R.Hands) * 0.03f && Puck)
 		{
 			Puck->Release(FVector(C->Vel * 0.3f, 0.f), EIRShotKind::None, C);
@@ -1152,6 +1158,7 @@ void AIRGameMode::OnGoal(int32 Sign)
 	AIRPlayer* Assist = Puck ? Puck->PrevTouch.Get() : nullptr;
 	if (Assist == Scorer || (Assist && Assist->Team != ScoringTeam)) { Assist = nullptr; }
 	Score[ScoringTeam]++;
+	if (Penalties[1 - ScoringTeam].Num() > 0) { ReleasePenalty(1 - ScoringTeam); }
 	TStats[ScoringTeam].GoalsByPeriod[FMath::Clamp(Period - 1, 0, 3)]++;
 	LastGoalTeam = ScoringTeam;
 	LastScorer = Scorer;
@@ -1363,5 +1370,128 @@ void AIRGameMode::TickReplay(float Dt)
 	{
 		Puck->Pos = FMath::Lerp(F0.Puck, F1.Puck, A);
 		if (FX && F1.bPuckFire) { FX->FireTrail(Puck->Pos, F1.Puck - F0.Puck); }
+	}
+}
+
+// ------------------------------------------------------------------------------------------------ pro rules
+
+void AIRGameMode::TickProRules(float Dt)
+{
+	if (!Puck)
+	{
+		return;
+	}
+	const float X = Puck->Pos.X;
+	const float PrevX = PrevPuckX;
+	PrevPuckX = X;
+	if (Opt.Rules != EIRRules::Pro || Mode == EIRMode::Practice)
+	{
+		return;
+	}
+	AIRPlayer* Last = Puck->LastTouch;
+	// icing candidate: released from behind the center line by a team at even strength or better
+	if (!Puck->Carrier && Last && !Last->IsGoalie() && Puck->FlightTime < 0.05f && Puck->Kind != EIRShotKind::None)
+	{
+		const int32 A = AttackSign(Last->Team);
+		bIcingCandidate = Puck->Pos.X * A < 0.f && Skaters[Last->Team].Num() >= Skaters[1 - Last->Team].Num();
+		IcingTeam = Last->Team;
+	}
+	if (bIcingCandidate && !Puck->Carrier && IcingTeam >= 0)
+	{
+		const int32 A = AttackSign(IcingTeam);
+		if (X * A > GoalLineX && FMath::Abs(Puck->Pos.Y) > NetHalfWidth + 10.f && !Puck->bInNet)
+		{
+			bIcingCandidate = false;
+			Announce(TEXT("VO_Icing"), 1.5f);
+			HandleWhistle(EndDot(-A, Puck->Pos.Y > 0.f ? 1 : -1), TEXT("ICING"));
+			return;
+		}
+	}
+	// offside: an attacker already in the zone when the puck crosses the blue line
+	if (Last)
+	{
+		const int32 T = Last->Team;
+		const int32 A = AttackSign(T);
+		if (PrevX * A <= BlueLineX && X * A > BlueLineX)
+		{
+			for (AIRPlayer* S : Skaters[T])
+			{
+				if (S != Last && S->Pos.X * A > BlueLineX + 45.f)
+				{
+					Announce(TEXT("VO_Offsides"), 1.5f);
+					HandleWhistle(NeutralDot(A, Puck->Pos.Y > 0.f ? 1 : -1), TEXT("OFFSIDE"));
+					return;
+				}
+			}
+		}
+	}
+}
+
+void AIRGameMode::CallPenalty(AIRPlayer* P, const FString& Reason)
+{
+	if (!P || P->IsGoalie() || Skaters[P->Team].Num() <= 2)
+	{
+		return;
+	}
+	const int32 T = P->Team;
+	FIRPenalty Pen;
+	Pen.P = P;
+	Pen.Time = FMath::Max(12.f, Opt.PeriodSeconds / 8.f);
+	Pen.Reason = Reason;
+	Penalties[T].Add(Pen);
+	Skaters[T].Remove(P);
+	if (P->HasPuck() && Puck) { Puck->SetCarried(nullptr); }
+	if (P->HumanIndex >= 0 && Humans.IsValidIndex(P->HumanIndex))
+	{
+		FIRHuman& H = Humans[P->HumanIndex];
+		P->HumanIndex = -1;
+		H.Controlled = nullptr;
+		SwitchHuman(H, true);
+	}
+	// sit him in the box behind the far boards
+	P->ResetForFaceoff();
+	P->Teleport(FVector2D(T == 0 ? -260.f : 260.f, -IRRink::HalfWidth - 140.f), PI * 0.5f);
+	P->SetScripted(true);
+	Announce(TEXT("VO_Penalty"), 2.f);
+	Announce(TEXT("VO_PowerPlay"), 1.5f);
+	Callout(FString::Printf(TEXT("%s"), *Reason), FString::Printf(TEXT("#%d %s · POWER PLAY %s"), P->Info.Number, *P->Info.Last.ToUpper(), *TeamInfo[1 - T].Abbrev), FLinearColor(1.f, 0.8f, 0.2f), 2.5f, 2);
+	Crowd(0.3f, TEXT("Crowd_Boo"));
+	// stop play: face-off in the offending team's end
+	const int32 A = AttackSign(T);
+	HandleWhistle(EndDot(-A, FMath::RandBool() ? 1 : -1), FString());
+}
+
+void AIRGameMode::ReleasePenalty(int32 InTeam)
+{
+	if (Penalties[InTeam].Num() == 0)
+	{
+		return;
+	}
+	FIRPenalty Pen = Penalties[InTeam][0];
+	Penalties[InTeam].RemoveAt(0);
+	if (AIRPlayer* P = Pen.P.Get())
+	{
+		P->SetScripted(false);
+		P->ResetForFaceoff();
+		// back onto the ice at the bench door
+		P->Teleport(FVector2D(InTeam == 0 ? -260.f : 260.f, -IRRink::HalfWidth + 80.f), -PI * 0.5f);
+		Skaters[InTeam].Add(P);
+		Callout(TEXT("BACK TO FULL STRENGTH"), TeamInfo[InTeam].Abbrev, TeamInfo[InTeam].Primary, 1.5f, 1);
+	}
+}
+
+void AIRGameMode::TickPenalties(float Dt)
+{
+	for (int32 t = 0; t < 2; ++t)
+	{
+		for (FIRPenalty& Pen : Penalties[t])
+		{
+			Pen.Time -= Dt;
+			if (AIRPlayer* P = Pen.P.Get()) { P->UpdateVisuals(Dt); }
+		}
+		if (Penalties[t].Num() > 0 && Penalties[t][0].Time <= 0.f)
+		{
+			ReleasePenalty(t);
+		}
 	}
 }

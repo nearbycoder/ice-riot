@@ -166,6 +166,7 @@ public:
 	float LastYaw = 0.f;
 	float YawRate = 0.f;
 	bool bStopping = false;
+	bool bWasStopping = false;
 	bool bBackward = false;
 	FIRIntent LastIntent;
 	FIRStats Stats;
