@@ -269,6 +269,7 @@ public:
 	void EventShot(const TCHAR* Tag, float Delay = 0.35f);
 private:
 	float EventShotAt = -1.f;
+	float AvgFrame = 1.f / 60.f;
 	FString EventShotTag;
 	int32 EventShotCount = 0;
 	float NextAutoshot = 0.f;

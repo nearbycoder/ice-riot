@@ -32,6 +32,7 @@ private:
 	void DrawAmbulance(AIRGameMode* Game);
 	void DrawReplay(AIRGameMode* Game);
 	void DrawFaceoffHint(AIRGameMode* Game);
+	void DrawControlsHint(AIRGameMode* Game);
 	void DrawTitle(AIRGameMode* Game);
 	void DrawMainMenu(AIRGameMode* Game);
 	void DrawJoin(AIRGameMode* Game);

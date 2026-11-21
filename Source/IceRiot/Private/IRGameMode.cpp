@@ -638,6 +638,7 @@ void AIRGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	const float RealDt = FMath::Min(DeltaSeconds, 0.1f);
+	AvgFrame = FMath::Lerp(AvgFrame, DeltaSeconds, 0.02f);
 	WallTime += RealDt;
 	ScreenTime += RealDt;
 	FIRInput::Get().BeginFrame(RealDt);
@@ -1457,7 +1458,9 @@ void AIRGameMode::Autoshot(float Dt)
 		NextAutoshot = WallTime + AutoshotInterval;
 		const FString File = FString::Printf(TEXT("%s/shot_%03d.png"), *AutoshotDir, AutoshotCount++);
 		FScreenshotRequest::RequestScreenshot(File, false, false);
-		UE_LOG(LogIceRiot, Display, TEXT("IR_AUTOSHOT %s phase=%d screen=%d score=%d-%d"), *File, int32(Phase), int32(Screen), Score[0], Score[1]);
+		AIRPlayer* H0 = Humans.Num() ? Humans[0].Controlled.Get() : nullptr;
+		UE_LOG(LogIceRiot, Display, TEXT("IR_AUTOSHOT %s phase=%d screen=%d score=%d-%d fps=%.1f p1=%d pos=%s"), *File, int32(Phase), int32(Screen), Score[0], Score[1], 1.f / FMath::Max(1e-3f, AvgFrame),
+			H0 ? H0->TeamIndex : -1, H0 ? *H0->Pos.ToString() : TEXT("-"));
 	}
 }
 

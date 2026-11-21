@@ -217,6 +217,7 @@ void AIRHUD::DrawGameplay(AIRGameMode* Game)
 	DrawScoreboard(Game);
 	if (Game->Phase == EIRMatchPhase::Fight) { DrawFight(Game); }
 	DrawFaceoffHint(Game);
+	DrawControlsHint(Game);
 	DrawAmbulance(Game);
 	DrawCallouts(Game);
 }
@@ -302,7 +303,7 @@ void AIRHUD::DrawPlayerMarkers(AIRGameMode* Game)
 		AIRPlayer* P = Hu.Controlled.Get();
 		if (!Hu.bActive || !P) { continue; }
 		FVector2D Scr;
-		const FVector Head = FVector(P->Pos.X, P->Pos.Y, P->Z + 230.f * (P->HeadScale > 1.5f ? 1.35f : 1.f));
+		const FVector Head = P->HeadPos() + FVector(0.f, 0.f, 40.f * P->HeadScale);
 		const bool bOn = PC->ProjectWorldLocationToScreen(Head, Scr, true);
 		const FLinearColor C = Hu.Color;
 		const FString Tag = FString::Printf(TEXT("P%d"), h + 1);
@@ -493,11 +494,11 @@ void AIRHUD::DrawFaceoffHint(AIRGameMode* Game)
 	{
 		if (Hu.Controlled.IsValid() && Game->Skaters[Hu.Team].Num() && Hu.Controlled.Get() == Game->Skaters[Hu.Team][0]) { bHumanCenter = true; }
 	}
-	Slant(Canvas, W * 0.5f - 210 * S, H * 0.78f, 420 * S, 60 * S, 16 * S, WithA(Ink, 0.8f));
-	Text(Canvas, Game->bFaceoffDropped ? TEXT("GO!") : TEXT("FACE-OFF"), W * 0.5f, H * 0.78f + 6 * S, 46 * S, Game->bFaceoffDropped ? Gold : FLinearColor::White, Center, true);
+	Slant(Canvas, W * 0.5f - 210 * S, H * 0.62f, 420 * S, 60 * S, 16 * S, WithA(Ink, 0.8f));
+	Text(Canvas, Game->bFaceoffDropped ? TEXT("GO!") : TEXT("FACE-OFF"), W * 0.5f, H * 0.62f + 6 * S, 46 * S, Game->bFaceoffDropped ? Gold : FLinearColor::White, Center, true);
 	if (bHumanCenter)
 	{
-		Text(Canvas, TEXT("hit SHOOT or PASS the instant the puck drops · aim with the stick"), W * 0.5f, H * 0.78f + 70 * S, 24 * S, Dim, Center, false, 2 * S);
+		Text(Canvas, TEXT("hit SHOOT or PASS the instant the puck drops · aim with the stick"), W * 0.5f, H * 0.62f + 70 * S, 24 * S, Dim, Center, false, 2 * S);
 	}
 }
 
@@ -854,4 +855,34 @@ void AIRHUD::DrawCredits(AIRGameMode* Game)
 		Text(Canvas, Lines[i], W * 0.5f, 380 * S + i * 52 * S, i == 0 ? 40 * S : 28 * S, i == 0 ? Gold : FLinearColor::White, Center, i == 0, 2 * S);
 	}
 	DrawFooter(TEXT("ESC / B back"));
+}
+
+void AIRHUD::DrawControlsHint(AIRGameMode* Game)
+{
+	// first face-off of the game: a compact cheat sheet per human, tailored to the device
+	const bool bShow = Game->Period == 1 && Game->Score[0] + Game->Score[1] == 0 && Game->GameTime < 30.f &&
+		(Game->Phase == EIRMatchPhase::FaceoffSetup || Game->Phase == EIRMatchPhase::Faceoff || (Game->Phase == EIRMatchPhase::Live && Game->PhaseTime < 4.f));
+	if (!bShow || Game->Humans.Num() == 0 || Game->Humans[0].Bind.Source == EIRSource::Autopilot)
+	{
+		return;
+	}
+	const float A = Game->Phase == EIRMatchPhase::Live ? FMath::Clamp(1.f - (Game->PhaseTime - 3.f), 0.f, 1.f) : 1.f;
+	const int32 N = FMath::Min(Game->Humans.Num(), 4);
+	const float BW = 400 * S, BH = 150 * S, Gap = 16 * S;
+	const float X0 = W * 0.5f - (N * BW + (N - 1) * Gap) * 0.5f;
+	for (int32 h = 0; h < N; ++h)
+	{
+		const FIRHuman& Hu = Game->Humans[h];
+		const bool bPad = Hu.Bind.Source == EIRSource::Gamepad;
+		const bool bB = Hu.Bind.Source == EIRSource::KeyboardB;
+		const float X = X0 + h * (BW + Gap), Y = H - BH - 70 * S;
+		Box(Canvas, X, Y, BW, BH, WithA(Ink, 0.82f * A));
+		Box(Canvas, X, Y, 6 * S, BH, WithA(Hu.Color, A));
+		Text(Canvas, FString::Printf(TEXT("P%d"), h + 1), X + 20 * S, Y + 8 * S, 34 * S, WithA(Hu.Color, A), Left, true);
+		const TCHAR* L1 = bPad ? TEXT("A shoot (hold = slap)   X pass   RT turbo") : (bB ? TEXT(", shoot (hold = slap)   . pass   / turbo") : TEXT("J shoot (hold = slap)   K pass   L turbo"));
+		const TCHAR* L2 = bPad ? TEXT("B switch / deke   Y hook   Back camera") : (bB ? TEXT("; switch / deke   ' hook   arrows skate") : TEXT("I switch / deke   U hook   WASD skate"));
+		Text(Canvas, L1, X + 20 * S, Y + 52 * S, 22 * S, WithA(FLinearColor::White, A), Left, false);
+		Text(Canvas, L2, X + 20 * S, Y + 80 * S, 22 * S, WithA(FLinearColor::White, A), Left, false);
+		Text(Canvas, TEXT("SHOOT + TURBO = POWER SHOT"), X + 20 * S, Y + 112 * S, 22 * S, WithA(Hot, A), Left, true);
+	}
 }
