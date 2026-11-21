@@ -15,7 +15,9 @@ NOTES="$OUT/notes.md"
 if gh release view "$TAG" >/dev/null 2>&1; then
   gh release upload "$TAG" "$OUT/IceRiot-macOS.zip" "$OUT/IceRiot-Web.zip" --clobber
   gh release edit "$TAG" --title "$TITLE" --notes-file "$NOTES"
-  gh workflow run pages.yml >/dev/null && echo "Pages redeploy triggered"
+  gh workflow run pages.yml --ref main >/dev/null && echo "Pages redeploy triggered"
 else
   gh release create "$TAG" "$OUT/IceRiot-macOS.zip" "$OUT/IceRiot-Web.zip" --title "$TITLE" --notes-file "$NOTES" --latest
+  # the github-pages environment only deploys from main: dispatch the workflow there (it fetches the latest release)
+  gh workflow run pages.yml --ref main >/dev/null && echo "Pages deploy triggered"
 fi
