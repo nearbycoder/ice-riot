@@ -5,6 +5,7 @@
 #include "IRRoster.h"
 #include "IRRink.h"
 #include "IRInput.h"
+#include "IRArena.h"
 #include "Engine/Canvas.h"
 #include "CanvasItem.h"
 #include "TextureResource.h"
@@ -442,7 +443,7 @@ void AIRHUD::DrawFight(AIRGameMode* Game)
 void AIRHUD::DrawAmbulance(AIRGameMode* Game)
 {
 	const float U = Game->GameTime - Game->AmbulanceTime;
-	if (U < 0.f || U > 3.2f)
+	if (U < 0.f || U > 3.2f || (Game->Arena && Game->Arena->Ambulance))
 	{
 		return;
 	}
@@ -763,7 +764,7 @@ void AIRHUD::DrawPause(AIRGameMode* Game)
 
 void AIRHUD::DrawIntermission(AIRGameMode* Game, bool bFinal)
 {
-	Box(Canvas, 0, 0, W, H, WithA(Ink, bFinal ? 0.55f : 0.8f));
+	Box(Canvas, 0, 0, W, H, WithA(Ink, bFinal ? 0.5f : 0.55f));
 	const int32 Win = Game->Score[0] > Game->Score[1] ? 0 : 1;
 	if (bFinal && Game->Mode != EIRMode::Practice)
 	{

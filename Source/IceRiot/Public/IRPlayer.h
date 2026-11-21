@@ -163,6 +163,7 @@ public:
 	float SprayTimer = 0.f;
 	float FootstepPhase = 0.f;
 	float LeanSmoothed = 0.f;
+	float HitFlash = 0.f;
 	float LastYaw = 0.f;
 	float YawRate = 0.f;
 	bool bStopping = false;

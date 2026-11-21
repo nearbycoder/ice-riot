@@ -194,6 +194,17 @@ void AIRArena::Build(AIRGameMode* InGame)
 		}
 	}
 
+	// the power-check gag: a cartoon ambulance races along the far boards
+	if (UStaticMesh* AM = AS->Mesh(TEXT("SM_Ambulance")))
+	{
+		Ambulance = AddMesh(AM, FTransform::Identity, true);
+		Ambulance->SetVisibility(false);
+	}
+	if (UStaticMesh* RM = AS->Mesh(TEXT("SM_Resurfacer")))
+	{
+		Resurfacer = AddMesh(RM, FTransform::Identity, true);
+		Resurfacer->SetVisibility(false);
+	}
 	// jumbotron screen render target
 	if (Jumbo)
 	{
@@ -325,6 +336,32 @@ void AIRArena::Tick2(float Dt)
 			S->SetIntensity(FMath::FInterpTo(S->Intensity, 5200.f * Dim, Dt, 2.f));
 		}
 		if (Sun) { Sun->SetIntensity(FMath::FInterpTo(Sun->Intensity, 4.2f * (bIntro ? 0.35f : 1.f), Dt, 2.f)); }
+	}
+	if (Ambulance && Game)
+	{
+		const float U = Game->GameTime - Game->AmbulanceTime;
+		const bool bOn = U >= 0.f && U < 3.2f;
+		Ambulance->SetVisibility(bOn);
+		if (bOn)
+		{
+			const float X = FMath::Lerp(-2700.f, 2700.f, U / 3.2f);
+			const float Bounce = FMath::Abs(FMath::Sin(U * 16.f)) * 4.f;
+			Ambulance->SetRelativeLocationAndRotation(FVector(X, -HalfWidth + 190.f, Bounce), FRotator(FMath::Sin(U * 9.f) * 1.5f, 0.f, 0.f));
+		}
+	}
+	if (Resurfacer && Game)
+	{
+		// between periods the ice resurfacer laps the rink
+		const bool bOn = Game->Screen == EIRScreen::Intermission;
+		Resurfacer->SetVisibility(bOn);
+		if (bOn)
+		{
+			ResurfaceT += Dt * 0.09f;
+			const float A = ResurfaceT * 2.f * PI;
+			const FVector P(FMath::Cos(A) * 1500.f, FMath::Sin(A) * 620.f, 0.f);
+			const FVector Tan(-FMath::Sin(A) * 1500.f, FMath::Cos(A) * 620.f, 0.f);
+			Resurfacer->SetRelativeLocationAndRotation(P, Tan.Rotation());
+		}
 	}
 	if (IceMID && Game)
 	{

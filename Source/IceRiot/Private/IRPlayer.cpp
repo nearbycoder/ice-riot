@@ -1094,6 +1094,7 @@ void AIRPlayer::SimulateFight(float Dt, const FIRIntent& In)
 void AIRPlayer::TakeHit(AIRPlayer* From, float Power, bool bPowerCheck, FVector2D Dir)
 {
 	LastHitBy = From;
+	HitFlash = 1.f;
 	LastHitTime = Game ? Game->GameTime : 0.f;
 	const float FrenzyMul = (Game && Game->Opt.bFightFrenzy) ? 3.f : 1.f;
 	Anger = FMath::Min(1.2f, Anger + (bPowerCheck ? 0.48f : 0.23f) * FrenzyMul * FMath::Lerp(0.75f, 1.25f, Info.R.Fight / 10.f));
@@ -1287,6 +1288,24 @@ void AIRPlayer::UpdateVisuals(float Dt)
 		}
 	}
 
+	// fiery rim when BLAZING (hat trick) or in RAGE (won a fight), white flash when hit
+	HitFlash = FMath::Max(0.f, HitFlash - Dt * 5.f);
+	{
+		const float Rim = bBlazing ? 2.5f + FMath::Sin(StrideTimer * 3.f) * 0.8f : (Rage > 0.f ? 2.0f : 0.f);
+		const FLinearColor RimC = bBlazing ? FLinearColor(1.f, 0.35f, 0.02f) : FLinearColor(1.f, 0.05f, 0.02f);
+		for (UMaterialInstanceDynamic* M : MIDs)
+		{
+			if (!M) { continue; }
+			M->SetScalarParameterValue(TEXT("RimStrength"), Rim);
+			M->SetVectorParameterValue(TEXT("RimColor"), RimC);
+			M->SetScalarParameterValue(TEXT("FlashStrength"), HitFlash * 3.f);
+			M->SetVectorParameterValue(TEXT("FlashColor"), FLinearColor(1.f, 1.f, 1.f));
+		}
+		if (bBlazing && Game && Game->FX && FMath::FRand() < Dt * 20.f && Z < 10.f)
+		{
+			Game->FX->FireTrail(FVector(Pos.X, Pos.Y, FMath::FRandRange(20.f, 150.f)) - FVector(Vel * 0.05f, 0.f), FVector(Vel, 0.f));
+		}
+	}
 	// ring under the feet: human color with turbo arc, faint team color for CPU
 	if (RingMID && Ring)
 	{

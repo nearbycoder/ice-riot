@@ -297,6 +297,7 @@ void AIRGameMode::GoToScreen(EIRScreen S)
 		break;
 	case EIRScreen::Intermission:
 		Audio->PlayMusic(TEXT("Music_Intermission"), 1.f);
+		if (Cam) { Cam->SetShot(EIRShot::Title, 1.2f); }
 		break;
 	case EIRScreen::Results:
 		Audio->PlayMusic(TEXT("Music_Victory"), 0.3f);

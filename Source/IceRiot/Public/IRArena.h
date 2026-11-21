@@ -33,6 +33,9 @@ public:
 	UPROPERTY() TObjectPtr<UStaticMeshComponent> Jumbo;
 	UPROPERTY() TObjectPtr<UStaticMeshComponent> Glass;
 	UPROPERTY() TObjectPtr<UStaticMeshComponent> Ice;
+	UPROPERTY() TObjectPtr<UStaticMeshComponent> Ambulance;
+	UPROPERTY() TObjectPtr<UStaticMeshComponent> Resurfacer;
+	float ResurfaceT = 0.f;
 	UPROPERTY() TObjectPtr<UStaticMeshComponent> Nets[2];
 	UPROPERTY() TObjectPtr<UStaticMeshComponent> GoalLights[2];
 	UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> GoalLightMID[2];

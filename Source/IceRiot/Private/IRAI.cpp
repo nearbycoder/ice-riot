@@ -289,6 +289,7 @@ FIRIntent AIRGameMode::ThinkAI(AIRPlayer* P, float Dt)
 				if (P->CanAct() && P->AIActTimer <= 0.f && FVector2D::Distance(D->Pos, P->Pos) < 160.f && FVector2D::DotProduct((D->Pos - P->Pos).GetSafeNormal(), P->Forward()) > 0.5f && FMath::FRand() < 0.25f * Skill)
 				{
 					In.bShootPressed = true;
+					In.bTurbo = FMath::FRand() < 0.08f * Skill;   // turbo would turn the bump into a power check
 					P->AIActTimer = 1.f;
 				}
 			}
@@ -365,6 +366,7 @@ FIRIntent AIRGameMode::ThinkAI(AIRPlayer* P, float Dt)
 		if (Mark && P->CanAct() && P->AIActTimer <= 0.f && FVector2D::Distance(Mark->Pos, P->Pos) < 150.f && FMath::FRand() < 0.1f * Skill)
 		{
 			In.bShootPressed = true;
+			In.bTurbo = false;
 			In.bFaceTarget = false;
 			P->AIActTimer = 1.5f;
 		}
