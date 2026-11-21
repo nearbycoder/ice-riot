@@ -257,6 +257,23 @@ void AIRHUD::DrawScoreboard(AIRGameMode* Game)
 	const FString Per = Game->bOvertime ? TEXT("OVERTIME") : FString::Printf(TEXT("PERIOD %d"), Game->Period);
 	Text(Canvas, Per, CX, Y + 46 * S, 20 * S, Gold, Center, false);
 
+	// penalty timers (Pro rules)
+	for (int32 t = 0; t < 2; ++t)
+	{
+		for (int32 i = 0; i < Game->Penalties[t].Num(); ++i)
+		{
+			const FIRPenalty& Pen = Game->Penalties[t][i];
+			const float PX = t == 0 ? X + 20 * S : X + CW - 250 * S;
+			Box(Canvas, PX, Y + CH + 36 * S + i * 34 * S, 230 * S, 30 * S, WithA(Ink, 0.85f));
+			Text(Canvas, FString::Printf(TEXT("PENALTY  %s"), *ClockStr(Pen.Time)), PX + 10 * S, Y + CH + 38 * S + i * 34 * S, 24 * S, Gold, Left, true);
+		}
+		if (Game->Penalties[1 - t].Num() > 0 && Game->Penalties[t].Num() == 0)
+		{
+			const float PX = t == 0 ? X + 20 * S : X + CW - 250 * S;
+			Slant(Canvas, PX, Y + CH + 36 * S, 230 * S, 30 * S, 8 * S, WithA(Hot, 0.9f));
+			Text(Canvas, TEXT("POWER PLAY"), PX + 115 * S, Y + CH + 38 * S, 24 * S, FLinearColor::White, Center, true);
+		}
+	}
 	// hot streak / rage badges under the plates
 	for (int32 t = 0; t < 2; ++t)
 	{
@@ -353,13 +370,14 @@ void AIRHUD::DrawCallouts(AIRGameMode* Game)
 			const float In = FMath::Clamp(U / 0.25f, 0.f, 1.f);
 			const float Sc = (U < 0.25f ? FMath::Lerp(2.4f, 1.f, EaseOutBack(In)) : 1.f + 0.03f * FMath::Sin(U * 8.f)) * C.Scale;
 			const float Sz = 150.f * S * Sc;
-			const float Y = H * 0.34f - Sz * 0.5f;
-			Slant(Canvas, 0, H * 0.34f - 70 * S, W, 140 * S, 0, WithA(Ink, 0.45f * Out * In));
-			Slant(Canvas, W * 0.5f - 600 * S, H * 0.34f + 64 * S, 1200 * S, 8 * S, 20 * S, WithA(C.Color, Out));
+			const float CY = H * 0.26f;
+			const float Y = CY - Sz * 0.55f;
+			Slant(Canvas, 0, CY - Sz * 0.42f, W, Sz * 0.84f, 0, WithA(Ink, 0.32f * Out * In));
+			Slant(Canvas, W * 0.5f - 600 * S, CY + Sz * 0.42f, 1200 * S, 8 * S, 20 * S, WithA(C.Color, Out));
 			Text(Canvas, C.Text, W * 0.5f, Y, Sz, WithA(FLinearColor::White, Out), Center, true, 0.f, WithA(C.Color, Out), 7 * S * Sc);
 			if (!C.Sub.IsEmpty())
 			{
-				Text(Canvas, C.Sub, W * 0.5f, H * 0.34f + 84 * S, 40 * S, WithA(FLinearColor::White, Out * FMath::Clamp((U - 0.2f) / 0.2f, 0.f, 1.f)), Center, true, 3 * S);
+				Text(Canvas, C.Sub, W * 0.5f, CY + Sz * 0.42f + 16 * S, 40 * S, WithA(FLinearColor::White, Out * FMath::Clamp((U - 0.2f) / 0.2f, 0.f, 1.f)), Center, true, 3 * S);
 			}
 		}
 		else if (C.Style == 1)
@@ -553,7 +571,7 @@ void AIRHUD::DrawJoin(AIRGameMode* Game)
 			Text(Canvas, SourceName(Hu.Bind, PadIdx), CX - ColW * 0.18f, Y + 34 * S, 36 * S, Ink, Left, true);
 			if (Game->PendingMode == EIRMode::Exhibition)
 			{
-				Text(Canvas, Side == 0 ? TEXT(">") : TEXT("<"), Side == 0 ? CX + ColW * 0.38f : CX - ColW * 0.38f + 340 * S, Y + 26 * S, 50 * S, Ink, Center, true);
+				Text(Canvas, Side == 0 ? TEXT("→") : TEXT("←"), CX + ColW * 0.38f, Y + 30 * S, 40 * S, WithA(Ink, 0.7f), Center, false);
 			}
 			Row++;
 		}
@@ -585,11 +603,13 @@ void AIRHUD::DrawTeamSelect(AIRGameMode* Game)
 		Box(Canvas, CX - PW * 0.5f, PY, PW, 10 * S, TI.Secondary);
 		Text(Canvas, Side == 0 ? TEXT("HOME") : TEXT("AWAY"), CX - PW * 0.5f + 20 * S, PY + 20 * S, 32 * S, TI.Trim, Left, true, 2 * S);
 		DrawTeamBadge(TI, CX, PY + 200 * S, 250 * S);
-		Text(Canvas, TI.City.ToUpper(), CX, PY + 340 * S, 40 * S, TI.Trim, Center, true, 2 * S);
+		Text(Canvas, TI.City.ToUpper(), CX, PY + 340 * S, 40 * S, FLinearColor::White, Center, true, 0.f, Ink, 2 * S);
 		Text(Canvas, TI.Name.ToUpper(), CX, PY + 380 * S, 86 * S, FLinearColor::White, Center, true, 4 * S);
-		FString Stars;
-		for (int32 i = 0; i < 5; ++i) { Stars += i < FMath::Min(TI.Stars, 5) ? TEXT("★") : TEXT("☆"); }
-		Text(Canvas, Stars, CX, PY + 480 * S, 40 * S, Gold, Center, false, 2 * S);
+		for (int32 i = 0; i < 5; ++i)
+		{
+			Star(Canvas, CX + (i - 2) * 44 * S, PY + 500 * S, 18 * S, i < FMath::Min(TI.Stars, 5) ? Gold : WithA(Ink, 0.6f));
+		}
+		Text(Canvas, FString::Printf(TEXT("STARS: %s #%d · %s #%d"), *TI.Skaters[0].Last.ToUpper(), TI.Skaters[0].Number, *TI.Skaters[1].Last.ToUpper(), TI.Skaters[1].Number), CX, PY + 528 * S, 22 * S, FLinearColor::White, Center, false, 2 * S);
 		// team ratings averaged over the roster
 		float Avg[5] = { 0, 0, 0, 0, 0 };
 		for (const FIRPlayerInfo& P : TI.Skaters)
@@ -601,12 +621,11 @@ void AIRHUD::DrawTeamSelect(AIRGameMode* Game)
 		static const TCHAR* Lbl[] = { TEXT("SPEED"), TEXT("SHOOTING"), TEXT("CHECKING"), TEXT("HANDS"), TEXT("GOALIE") };
 		for (int32 i = 0; i < 5; ++i)
 		{
-			const float Y = PY + 540 * S + i * 40 * S;
+			const float Y = PY + 568 * S + i * 36 * S;
 			Text(Canvas, Lbl[i], CX - 300 * S, Y, 26 * S, Dim, Left, false);
 			Box(Canvas, CX - 120 * S, Y + 8 * S, 400 * S, 16 * S, WithA(Ink, 0.8f));
 			Box(Canvas, CX - 120 * S, Y + 8 * S, 400 * S * Avg[i] / 10.f, 16 * S, FLinearColor::LerpUsingHSV(Ice, Hot, Avg[i] / 10.f));
 		}
-		Text(Canvas, FString::Printf(TEXT("STARS: %s #%d · %s #%d"), *TI.Skaters[0].Last.ToUpper(), TI.Skaters[0].Number, *TI.Skaters[1].Last.ToUpper(), TI.Skaters[1].Number), CX, PY + PH - 48 * S, 24 * S, FLinearColor::White, Center, false);
 		if (Game->bSideLocked[Side])
 		{
 			Slant(Canvas, CX - 170 * S, PY + PH + 20 * S, 340 * S, 60 * S, 16 * S, Gold);
@@ -800,7 +819,8 @@ void AIRHUD::DrawIntermission(AIRGameMode* Game, bool bFinal)
 		AIRPlayer* P = All[i];
 		const float CX = W * (0.25f + i * 0.25f);
 		const FString Line = P->IsGoalie() ? FString::Printf(TEXT("%d SAVES"), P->Stats.Saves) : FString::Printf(TEXT("%dG %dA  %d HITS"), P->Stats.Goals, P->Stats.Assists, P->Stats.Hits);
-		Text(Canvas, FString::Printf(TEXT("%s #%d %s"), *FString::ChrN(3 - i, TEXT('★')), P->Info.Number, *P->Info.Last.ToUpper()), CX, 868 * S, 32 * S, Game->TeamInfo[P->Team].Primary.GetLuminance() > 0.06f ? Game->TeamInfo[P->Team].Primary : FLinearColor::White, Center, true, 2 * S);
+		for (int32 k = 0; k < 3 - i; ++k) { Star(Canvas, CX + (k - (2 - i) * 0.5f) * 30 * S, 852 * S, 12 * S, Gold); }
+		Text(Canvas, FString::Printf(TEXT("#%d %s"), P->Info.Number, *P->Info.Last.ToUpper()), CX, 872 * S, 32 * S, Game->TeamInfo[P->Team].Primary.GetLuminance() > 0.06f ? Game->TeamInfo[P->Team].Primary : FLinearColor::White, Center, true, 2 * S);
 		Text(Canvas, Line, CX, 908 * S, 24 * S, Dim, Center, false);
 	}
 	FString Footer = TEXT("ENTER / A continue");

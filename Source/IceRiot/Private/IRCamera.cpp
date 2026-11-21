@@ -120,15 +120,15 @@ void AIRCamera::ComputeGame(float Dt, FVector& OutLoc, FRotator& OutRot, float& 
 	case EIRCameraMode::Broadcast:
 	{
 		const FVector Look(Fx, Fy * 0.45f - 60.f, 0.f);
-		OutLoc = Look + FVector(0.f, 2450.f, 1320.f) * ZoomSmoothed;
+		OutLoc = Look + FVector(0.f, 2080.f, 1150.f) * ZoomSmoothed;
 		OutRot = (Look - OutLoc).Rotation();
-		OutFov = 50.f;
+		OutFov = 46.f;
 		break;
 	}
 	case EIRCameraMode::HighBroadcast:
 	{
 		const FVector Look(Fx, Fy * 0.4f - 40.f, 0.f);
-		OutLoc = Look + FVector(0.f, 1850.f, 2100.f) * ZoomSmoothed;
+		OutLoc = Look + FVector(0.f, 1650.f, 1850.f) * ZoomSmoothed;
 		OutRot = (Look - OutLoc).Rotation();
 		OutFov = 52.f;
 		break;
@@ -203,11 +203,12 @@ void AIRCamera::ComputeShot(float Dt, FVector& OutLoc, FRotator& OutRot, float& 
 	case EIRShot::Goal:
 	{
 		AIRPlayer* S = Game ? Game->LastScorer.Get() : nullptr;
-		const FVector C = S ? FVector(S->Pos, 120.f) : (Game && Game->Puck ? Game->Puck->Pos : FVector::ZeroVector);
-		const float A = FMath::DegreesToRadians(70.f + T * 14.f);
-		const float Side = C.Y > 0.f ? -1.f : 1.f;
-		OutLoc = C + FVector(FMath::Cos(A) * 520.f * (C.X > 0 ? -1.f : 1.f), Side * -FMath::Sin(A) * 520.f + 300.f, 140.f + T * 20.f);
-		OutLoc.Y = FMath::Clamp(OutLoc.Y, -1400.f, 1700.f);
+		const FVector C = S ? FVector(S->Pos, 105.f) : (Game && Game->Puck ? Game->Puck->Pos : FVector::ZeroVector);
+		// broadcast-side orbit around the scorer, pushing in slowly
+		const float Push = FMath::Clamp(T / 3.f, 0.f, 1.f);
+		const float Dist = FMath::Lerp(820.f, 600.f, Push);
+		const float A = FMath::DegreesToRadians(FMath::Lerp(-28.f, 18.f, Push) + (C.X > 0.f ? 0.f : 0.f));
+		OutLoc = C + FVector(FMath::Sin(A) * Dist, FMath::Cos(A) * Dist, FMath::Lerp(300.f, 190.f, Push));
 		OutRot = (C - OutLoc).Rotation();
 		OutFov = 42.f;
 		break;

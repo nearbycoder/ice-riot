@@ -263,6 +263,12 @@ private:
 	void FinishGame();
 	void UpdateCatchup();
 	void Autoshot(float Dt);
+public:
+	void EventShot(const TCHAR* Tag, float Delay = 0.35f);
+private:
+	float EventShotAt = -1.f;
+	FString EventShotTag;
+	int32 EventShotCount = 0;
 	float NextAutoshot = 0.f;
 	int32 AutoshotCount = 0;
 	FString AutoshotPrefix;

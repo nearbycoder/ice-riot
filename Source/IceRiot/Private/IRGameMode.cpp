@@ -178,6 +178,7 @@ void AIRGameMode::StartPlay()
 	if (UStaticMesh* PM = AS->Mesh(TEXT("SM_Puck")))
 	{
 		Puck->Mesh->SetStaticMesh(PM);
+		Puck->Mesh->SetRelativeScale3D(FVector(1.5f, 1.5f, 1.4f));   // arcade readability: drawn bigger than its physics radius
 	}
 	else
 	{
@@ -253,6 +254,21 @@ void AIRGameMode::StartPlay()
 	{
 		StartAttract();
 		GoToScreen(EIRScreen::Title);
+		// test hook: open a menu screen directly (-irscreen=menu|join|teams|options|controls|credits|pause)
+		FString ScreenName;
+		if (FParse::Value(Cmd, TEXT("irscreen="), ScreenName))
+		{
+			auto AddHuman = [this](EIRSource Src, int32 Team)
+			{
+				FIRHuman H; H.Bind = { Src, -1 }; H.Team = Team; H.bActive = true; H.Color = GHumanColors[Humans.Num()]; Humans.Add(H);
+			};
+			if (ScreenName == TEXT("menu")) { GoToScreen(EIRScreen::MainMenu); MenuIndex = 0; }
+			else if (ScreenName == TEXT("join")) { PendingMode = EIRMode::Exhibition; AddHuman(EIRSource::KeyboardA, 0); AddHuman(EIRSource::KeyboardB, 1); AddHuman(EIRSource::Autopilot, 0); GoToScreen(EIRScreen::Join); }
+			else if (ScreenName == TEXT("teams")) { PendingMode = EIRMode::Exhibition; AddHuman(EIRSource::KeyboardFull, 0); SelectCursor[0] = 5; SelectCursor[1] = 2; bSideLocked[0] = true; GoToScreen(EIRScreen::TeamSelect); }
+			else if (ScreenName == TEXT("options")) { PauseReturn = EIRScreen::MainMenu; GoToScreen(EIRScreen::Options); MenuIndex = 4; }
+			else if (ScreenName == TEXT("controls")) { GoToScreen(EIRScreen::Controls); }
+			else if (ScreenName == TEXT("credits")) { GoToScreen(EIRScreen::Credits); }
+		}
 	}
 }
 
@@ -1422,11 +1438,27 @@ void AIRGameMode::Autoshot(float Dt)
 		AutoshotDir.Reset();
 		return;
 	}
+	if (EventShotAt > 0.f && WallTime >= EventShotAt)
+	{
+		EventShotAt = -1.f;
+		const FString File = FString::Printf(TEXT("%s/evt_%02d_%s.png"), *AutoshotDir, EventShotCount++, *EventShotTag);
+		FScreenshotRequest::RequestScreenshot(File, false, false);
+		UE_LOG(LogIceRiot, Display, TEXT("IR_AUTOSHOT %s"), *File);
+	}
 	if (WallTime >= NextAutoshot)
 	{
 		NextAutoshot = WallTime + AutoshotInterval;
 		const FString File = FString::Printf(TEXT("%s/shot_%03d.png"), *AutoshotDir, AutoshotCount++);
 		FScreenshotRequest::RequestScreenshot(File, false, false);
 		UE_LOG(LogIceRiot, Display, TEXT("IR_AUTOSHOT %s phase=%d screen=%d score=%d-%d"), *File, int32(Phase), int32(Screen), Score[0], Score[1]);
+	}
+}
+
+void AIRGameMode::EventShot(const TCHAR* Tag, float Delay)
+{
+	if (!AutoshotDir.IsEmpty() && EventShotAt < 0.f && EventShotCount < 40)
+	{
+		EventShotAt = WallTime + Delay;
+		EventShotTag = Tag;
 	}
 }

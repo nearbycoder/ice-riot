@@ -10,6 +10,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/SkeletalMesh.h"
 #include "Animation/AnimSequence.h"
+#include "Engine/Texture2D.h"
 
 using namespace IRRink;
 
@@ -162,9 +163,18 @@ void AIRPlayer::ApplyTeamLook(const FIRTeamInfo* TI)
 	}
 	UIRAssets* AS = UIRAssets::Get();
 	const bool bRef = Role == EIRRole::Referee;
-	const FLinearColor Primary = bRef ? FLinearColor(0.85f, 0.85f, 0.85f) : (TI ? TI->Primary : FLinearColor::Gray);
-	const FLinearColor Secondary = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : (TI ? TI->Secondary : FLinearColor::Black);
-	const FLinearColor Trim = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : (TI ? TI->Trim : FLinearColor::White);
+	FLinearColor Primary = bRef ? FLinearColor(0.85f, 0.85f, 0.85f) : (TI ? TI->Primary : FLinearColor::Gray);
+	FLinearColor Secondary = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : (TI ? TI->Secondary : FLinearColor::Black);
+	FLinearColor Trim = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : (TI ? TI->Trim : FLinearColor::White);
+	const FLinearColor HelmetC = Secondary.GetLuminance() > 0.6f ? Primary : Secondary;
+	if (!bRef && Team == 1)
+	{
+		// the away team wears white (like real hockey): every matchup reads at a glance
+		const FLinearColor White(0.82f, 0.83f, 0.86f);
+		Trim = Secondary.GetLuminance() > 0.6f ? Primary : Secondary;
+		Secondary = Primary;
+		Primary = White;
+	}
 	const float LumP = Primary.GetLuminance(), LumS = Secondary.GetLuminance();
 	const FLinearColor Dark = LumP < LumS ? Primary : Secondary;
 	MIDs.Reset();
@@ -173,7 +183,7 @@ void AIRPlayer::ApplyTeamLook(const FIRTeamInfo* TI)
 	{
 		const FString S = Slots[i].ToString();
 		UMaterialInterface* Base = Mesh->GetMaterial(i);
-		if (bRef && (S == TEXT("MI_TeamPrimary") || S == TEXT("MI_TeamSecondary") || S == TEXT("MI_TeamTrim")))
+		if (bRef && (S == TEXT("MI_TeamPrimary") || S == TEXT("MI_TeamSecondary") || S == TEXT("MI_TeamTrim") || S == TEXT("MI_JerseyCrest")))
 		{
 			if (UMaterialInterface* RefMat = AS->Material(TEXT("MI_RefJersey")))
 			{
@@ -193,9 +203,14 @@ void AIRPlayer::ApplyTeamLook(const FIRTeamInfo* TI)
 		if (S == TEXT("MI_TeamPrimary")) { C = Primary; }
 		else if (S == TEXT("MI_TeamSecondary")) { C = Secondary; }
 		else if (S == TEXT("MI_TeamTrim")) { C = Trim; }
-		else if (S == TEXT("MI_Helmet")) { C = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : Primary; }
-		else if (S == TEXT("MI_Pants")) { C = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : Dark; }
-		else if (S == TEXT("MI_Gloves")) { C = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : Primary; }
+		else if (S == TEXT("MI_Helmet")) { C = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : HelmetC; }
+		else if (S == TEXT("MI_Pants")) { C = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : (Team == 1 ? Secondary * 0.6f : Dark); }
+		else if (S == TEXT("MI_Gloves")) { C = bRef ? FLinearColor(0.02f, 0.02f, 0.02f) : HelmetC; }
+		else if (S == TEXT("MI_JerseyCrest"))
+		{
+			if (TI) { if (UTexture2D* Crest = AS->Texture(*FString::Printf(TEXT("T_Logo_%s"), *TI->Id))) { M->SetTextureParameterValue(TEXT("BaseTexture"), Crest); } }
+			bSet = false;
+		}
 		else if (S == TEXT("MI_GoaliePads")) { C = FLinearColor::LerpUsingHSV(FLinearColor(0.85f, 0.85f, 0.85f), Primary, 0.35f); }
 		else if (S == TEXT("MI_GoalieMask")) { C = Primary; }
 		else if (S == TEXT("MI_Number"))

@@ -207,7 +207,9 @@ void AIRGameMode::UpdatePuckInteractions(float Dt)
 		{
 			continue;
 		}
-		const bool bArmed = P->Action == EIRAction::OneTimerWindup || (P->bAutoOneTimer && P->OneTimerWindow > 0.f);
+		const int32 OA = AttackSign(P->Team);
+		const bool bScoringSpot = (GoalLineX - P->Pos.X * OA) > 120.f && FVector2D::Distance(P->Pos, FVector2D(GoalLineX * OA, 0.f)) < 1700.f;
+		const bool bArmed = bScoringSpot && (P->Action == EIRAction::OneTimerWindup || (P->bAutoOneTimer && P->OneTimerWindow > 0.f));
 		if (bArmed && PP.Z < 50.f && FVector2D::Distance(P->StickReachPoint(), P2) < 105.f && Puck->LastTouch != P)
 		{
 			Puck->SetCarried(P);
@@ -564,6 +566,7 @@ void AIRGameMode::OnShotReleased(AIRPlayer* Shooter, EIRShotKind Kind, float Pow
 	if (Kind == EIRShotKind::Power)
 	{
 		TStats[Shooter->Team].PowerShots++;
+		EventShot(TEXT("powershot"), 0.12f);
 		Shake(0.45f);
 		HitStop = 0.05f;
 		if (FX) { FX->Impact(From, 0.7f, FLinearColor(1.f, 0.5f, 0.1f, 1.f) * 2.f); }
@@ -860,6 +863,7 @@ void AIRGameMode::OnCheck(AIRPlayer* Att, bool bPower)
 		Crowd(0.6f, TEXT("Crowd_Cheer_Small"));
 		Callout(TEXT("CRUSHED!"), Victim->Info.Last.ToUpper(), FLinearColor(1.f, 0.25f, 0.15f), 1.5f, 0, 0.8f);
 		AmbulanceTime = GameTime;
+		EventShot(TEXT("powercheck"), 0.15f);
 		Sfx(TEXT("Sfx/Ambulance_Siren"), FVector(0, 0, 0), 0.7f);
 		RumbleFor(Att, 1.f, 0.35f);
 		RumbleFor(Victim, 1.f, 0.5f);
@@ -1017,6 +1021,7 @@ void AIRGameMode::StartFight(AIRPlayer* A, AIRPlayer* B)
 	if (Audio) { Audio->SetExcitement(1.f); }
 	Callout(TEXT("FIGHT!"), FString::Printf(TEXT("%s vs %s"), *A->Info.Last.ToUpper(), *B->Info.Last.ToUpper()), FLinearColor(1.f, 0.15f, 0.1f), 2.f, 0, 1.1f);
 	SetPhase(EIRMatchPhase::Fight);
+	EventShot(TEXT("fight"), 1.2f);
 }
 
 void AIRGameMode::FightPunch(AIRPlayer* Att, int32 Kind)
@@ -1187,6 +1192,7 @@ void AIRGameMode::OnGoal(int32 Sign)
 	}
 
 	SetPhase(EIRMatchPhase::Goal);
+	EventShot(TEXT("goal"), 0.25f);
 	SlowMo = 0.3f;
 	SlowMoTime = 0.7f;
 	GoalLightTime[Sign > 0 ? 0 : 1] = GameTime;
@@ -1309,6 +1315,7 @@ void AIRGameMode::StartReplay()
 	if (ReplayBuf.Num() > 0) { ReplayStart = FMath::Max(ReplayStart, ReplayBuf[0].T); }
 	ReplayCursor = ReplayStart;
 	bReplaying = true;
+	EventShot(TEXT("replay"), 2.0f);
 	if (Cam) { Cam->SetShot(EIRShot::Replay, 0.f); Cam->Cut(); }
 	if (Arena) { Arena->SetGoalLight(GoalSignLast, false); }
 	if (FX) { FX->Clear(); }

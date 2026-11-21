@@ -102,11 +102,39 @@ void IRDraw::Image(UCanvas* C, UTexture* T, float X, float Y, float W, float H, 
 
 void IRDraw::Gradient(UCanvas* C, float X, float Y, float W, float H, const FLinearColor& Top, const FLinearColor& Bottom)
 {
-	const int32 N = FMath::Clamp(int32(H / 6.f), 8, 96);
+	// exact, non-overlapping pixel rows so translucent strips never double up
+	const int32 N = FMath::Clamp(int32(H / 4.f), 8, 160);
+	float Prev = FMath::RoundToFloat(Y);
 	for (int32 i = 0; i < N; ++i)
 	{
-		const float A = (i + 0.5f) / N;
-		Box(C, X, Y + H * i / N, W, H / N + 0.5f, FMath::Lerp(Top, Bottom, A));
+		const float Next = FMath::RoundToFloat(Y + H * (i + 1) / N);
+		if (Next > Prev)
+		{
+			Box(C, X, Prev, W, Next - Prev, FMath::Lerp(Top, Bottom, (i + 0.5f) / N));
+		}
+		Prev = Next;
+	}
+}
+
+void IRDraw::Star(UCanvas* C, float X, float Y, float R, const FLinearColor& Color)
+{
+	if (!C)
+	{
+		return;
+	}
+	FVector2D Pts[10];
+	for (int32 i = 0; i < 10; ++i)
+	{
+		const float A = -PI * 0.5f + i * PI / 5.f;
+		const float Rad = (i % 2 == 0) ? R : R * 0.42f;
+		Pts[i] = FVector2D(X + FMath::Cos(A) * Rad, Y + FMath::Sin(A) * Rad);
+	}
+	for (int32 i = 0; i < 10; ++i)
+	{
+		FCanvasTriangleItem T(FVector2D(X, Y), Pts[i], Pts[(i + 1) % 10], GWhiteTexture);
+		T.SetColor(Color);
+		T.BlendMode = SE_BLEND_Translucent;
+		C->DrawItem(T);
 	}
 }
 

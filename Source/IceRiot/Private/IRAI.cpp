@@ -322,7 +322,7 @@ FIRIntent AIRGameMode::ThinkAI(AIRPlayer* P, float Dt)
 			if (Facing > 0.4f && DistC < 170.f && R < 0.45f + Skill * 0.2f)
 			{
 				In.bShootPressed = true;                                   // body check
-				In.bTurbo = P->Turbo > 0.5f && FMath::FRand() < 0.18f + Skill * 0.15f + Boost * 0.1f;   // power check!
+				In.bTurbo = P->Turbo > 0.6f && FMath::FRand() < 0.07f + Skill * 0.08f + Boost * 0.05f;   // power check!
 			}
 			else if (R < 0.85f)
 			{

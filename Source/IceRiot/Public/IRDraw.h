@@ -18,5 +18,6 @@ namespace IRDraw
 	void Slant(UCanvas* C, float X, float Y, float W, float H, float Skew, const FLinearColor& Color);
 	void Image(UCanvas* C, UTexture* T, float X, float Y, float W, float H, const FLinearColor& Tint = FLinearColor::White);
 	void Gradient(UCanvas* C, float X, float Y, float W, float H, const FLinearColor& Top, const FLinearColor& Bottom);
+	void Star(UCanvas* C, float X, float Y, float R, const FLinearColor& Color);
 	void Circle(UCanvas* C, float X, float Y, float R, const FLinearColor& Color, int32 Segs = 24, float Fill = 1.f);
 }

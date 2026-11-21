@@ -109,7 +109,7 @@ void AIRArena::Build(AIRGameMode* InGame)
 	PP.bOverride_AutoExposureMethod = true;
 	PP.AutoExposureMethod = EAutoExposureMethod::AEM_Manual;
 	PP.bOverride_AutoExposureBias = true;
-	PP.AutoExposureBias = 11.2f;
+	PP.AutoExposureBias = 9.6f;
 	PP.bOverride_BloomIntensity = true;
 	PP.BloomIntensity = 0.55f;
 	PP.bOverride_BloomThreshold = true;
